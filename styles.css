@@ -7,7 +7,8 @@
 */
 
 /* Nuova regola per body */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -15,8 +16,10 @@ html, body {
 }
 
 body {
-  display: flex;              /* Per sticky footer (opzionale) */
-  flex-direction: column;     /* Per sticky footer (opzionale) */
+  display: flex;
+  /* Per sticky footer (opzionale) */
+  flex-direction: column;
+  /* Per sticky footer (opzionale) */
   background: #f4f4f4;
   font-family: 'Poppins', sans-serif;
 }
@@ -24,14 +27,17 @@ body {
 /* Contenitore che centra e limita la larghezza del contenuto */
 .content-container {
   max-width: 900px;
-  margin: 0 auto;     /* Centra orizzontalmente */
+  margin: 0 auto;
+  /* Centra orizzontalmente */
   padding: 20px;
   box-sizing: border-box;
-  flex: 1;           /* Occupa lo spazio verticale (opzionale se vuoi sticky footer) */
+  flex: 1;
+  /* Occupa lo spazio verticale (opzionale se vuoi sticky footer) */
 }
 
 main {
-  flex: 1; /* Occupa lo spazio rimanente, spingendo il footer in basso */
+  flex: 1;
+  /* Occupa lo spazio rimanente, spingendo il footer in basso */
 }
 
 header {
@@ -42,12 +48,13 @@ header {
 /* Titolo più grande */
 h1 {
   margin-bottom: 5px;
-  font-size: 2rem; /* Più grande del default */
+  font-size: 2rem;
+  /* Più grande del default */
 }
 
 /* Testo descrittivo più piccolo */
 .description {
-  font-size: 0.85rem; 
+  font-size: 0.85rem;
   color: #555;
   max-width: 700px;
   margin: 0 auto 20px;
@@ -59,8 +66,9 @@ h1 {
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 20px;
-  box-shadow: 0 0 5px rgba(0,0,0,0.1);
-  font-size: 1rem; /* Aumenta dimensione font per leggibilità */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  font-size: 1rem;
+  /* Aumenta dimensione font per leggibilità */
 }
 
 /* Righe del form */
@@ -76,16 +84,20 @@ h1 {
 .nome-group {
   flex: 0 0 40%;
 }
+
 .importo-group {
   flex: 0 0 25%;
 }
+
 .tipo-group {
   flex: 1;
   /* Nascondi il label "Tipo:" */
 }
+
 .tipo-group label {
   color: transparent;
 }
+
 .descrizione-group {
   flex: 0 0 40%;
 }
@@ -94,7 +106,8 @@ h1 {
 .form-group input[type="text"],
 .form-group input[type="number"] {
   width: 100%;
-  padding: 10px; /* un po' più grande */
+  padding: 10px;
+  /* un po' più grande */
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
@@ -114,6 +127,7 @@ label {
   cursor: pointer;
   font-size: 1rem;
 }
+
 #add-transaction:hover {
   background-color: #1976D2;
 }
@@ -140,7 +154,8 @@ label {
   overflow: hidden;
   cursor: pointer;
   border-radius: 50px;
-  background-color: #4CAF50; /* Verde (Credito) di default */
+  background-color: #4CAF50;
+  /* Verde (Credito) di default */
   transition: background-color 0.3s ease;
   width: 100%;
   height: 100%;
@@ -163,22 +178,24 @@ label {
   transition: transform 0.3s ease;
 }
 
-.toggle-checkbox:checked + .toggle-label {
-  background-color: #F44336; /* Rosso se Debito */
+.toggle-checkbox:checked+.toggle-label {
+  background-color: #F44336;
+  /* Rosso se Debito */
 }
 
-.toggle-checkbox:checked + .toggle-label .toggle-inner {
+.toggle-checkbox:checked+.toggle-label .toggle-inner {
   margin-left: 0;
 }
 
-.toggle-checkbox:checked + .toggle-label .toggle-switch-button {
+.toggle-checkbox:checked+.toggle-label .toggle-switch-button {
   transform: translateX(26px);
 }
 
 /* Il testo accanto al toggle cambia colore a seconda del tipo */
 #toggle-text {
   font-weight: bold;
-  color: #4CAF50; /* Verde per Credito di default */
+  color: #4CAF50;
+  /* Verde per Credito di default */
   transition: color 0.3s ease;
 }
 
@@ -209,7 +226,8 @@ label {
 /* Liste di debiti, crediti e storico: font più grande */
 .lists-section,
 .history-section {
-  font-size: 1.05rem; /* leggermente più grande */
+  font-size: 1.05rem;
+  /* leggermente più grande */
 }
 
 .lists-section {
@@ -224,13 +242,14 @@ label {
   background: #fff;
   padding: 15px;
   border-radius: 8px;
-  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
   min-width: 280px;
 }
 
 .crediti-container {
   border-top: 5px solid #4CAF50;
 }
+
 .debiti-container {
   border-top: 5px solid #F44336;
 }
@@ -259,9 +278,10 @@ label {
   background: #fff;
   padding: 15px;
   border-radius: 8px;
-  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
 }
+
 .history-section h2 {
   margin-top: 0;
 }
@@ -292,6 +312,7 @@ label {
   margin-right: 5px;
   color: #777;
 }
+
 .fa-circle-plus:hover {
   color: #333;
 }
@@ -306,6 +327,7 @@ label {
   margin-left: 10px;
   transition: color 0.2s ease;
 }
+
 .action-btn:hover {
   color: #000;
 }
@@ -324,6 +346,7 @@ label {
   opacity: 0;
   transition: opacity 0.3s ease;
 }
+
 .confirmation-text.show {
   opacity: 1;
 }
@@ -333,38 +356,59 @@ label {
   .form-row {
     flex-direction: column;
   }
-  .nome-group, .importo-group, .tipo-group, .descrizione-group {
+
+  .nome-group,
+  .importo-group,
+  .tipo-group,
+  .descrizione-group {
     flex: 0 0 100%;
   }
+
   h1 {
-    font-size: 1.5rem; /* Più piccolo su mobile */
+    font-size: 1.5rem;
+    /* Più piccolo su mobile */
   }
+
   .description {
-    font-size: 0.75rem; /* Ancora più piccolo su mobile */
+    font-size: 0.65rem;
+    /* Ancora più piccolo su mobile */
   }
+
   .form-section {
-    font-size: 1rem; /* Rimane leggibile su mobile */
+    font-size: 1.2rem;
+    /* Rimane leggibile su mobile */
   }
+
   .lists-section,
   .history-section {
-    font-size: 1rem;
+    font-size: 1.2rem;
   }
-}
 
-/* Footer Sticky in fondo alla pagina */
-footer {
-  width: 100%;
-  text-align: center;
-  padding: 20px;
-  background: #222;
-  color: #bbb;
-  box-sizing: border-box;
-}
-footer a {
-  color: #bbb;
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-footer a:hover {
-  color: #56f1d2;
+  .form-section input[type="text"],
+  .form-section input[type="number"],
+  .form-section button {
+    font-size: 1.1rem;
+    /* dimensione testo nei campi */
+    padding: 12px;
+  }
+
+  /* Footer Sticky in fondo alla pagina */
+  footer {
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+    background: #222;
+    color: #bbb;
+    box-sizing: border-box;
+  }
+
+  footer a {
+    color: #bbb;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  footer a:hover {
+    color: #56f1d2;
+  }
 }
