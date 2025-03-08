@@ -4,8 +4,7 @@
 let transactions = [];
 const localStorageKey = 'debitiCreditiTransactions';
 
-// Suggerimenti fissi per la descrizione
-// (testo e icona associata; usiamo HTML con Font Awesome)
+// Suggerimenti fissi per la descrizione (testo e icona associata)
 const descriptionSuggestionsData = [
   { text: "Spesa", icon: "<i class='fa-solid fa-cart-shopping'></i>" },
   { text: "Cena", icon: "<i class='fa-solid fa-utensils'></i>" },
@@ -14,7 +13,7 @@ const descriptionSuggestionsData = [
   { text: "Regalo", icon: "<i class='fa-solid fa-gift'></i>" }
 ];
 
-// Mappatura delle icone per le parole chiave nelle descrizioni (per la lista)
+// Mappatura delle icone per le descrizioni nelle liste
 const descriptionIcons = {
   "spesa": "<i class='fa-solid fa-cart-shopping'></i>",
   "cena": "<i class='fa-solid fa-utensils'></i>",
@@ -59,23 +58,32 @@ renderAll();
 toggleTypeCheckbox.addEventListener('change', function() {
   if (toggleTypeCheckbox.checked) {
     toggleText.textContent = "Debito";
+    toggleText.style.color = "#F44336"; // Rosso per Debito
   } else {
     toggleText.textContent = "Credito";
+    toggleText.style.color = "#4CAF50"; // Verde per Credito
   }
 });
+
 
 // Submit del form
 form.addEventListener('submit', function(e) {
   e.preventDefault();
   const nome = nomeInput.value.trim();
-  let importo = parseFloat(importoInput.value);
+  let rawImporto = importoInput.value.trim();
+  let importo = parseFloat(rawImporto);
   if (!nome || isNaN(importo)) return;
 
-  // Se è Debito, importo negativo
-  if (toggleTypeCheckbox.checked) {
+  // Se l'utente ha inserito il segno "-" manualmente, forziamo il debito
+  if (rawImporto.indexOf('-') !== -1) {
     importo = -Math.abs(importo);
   } else {
-    importo = Math.abs(importo);
+    // Altrimenti, usiamo il toggle per determinare il segno
+    if (toggleTypeCheckbox.checked) {
+      importo = -Math.abs(importo);
+    } else {
+      importo = Math.abs(importo);
+    }
   }
   const descrizione = descrizioneInput.value.trim();
   const type = importo >= 0 ? "Credito" : "Debito";
@@ -147,24 +155,20 @@ function renderAggregatedLists() {
     const group = aggregated[key];
     const li = document.createElement('li');
 
-    // Se c'è più di una transazione, mostriamo l'icona di "più transazioni"
-    // Altrimenti, usiamo l'icona derivata dalla descrizione
+    // Se più transazioni: mostra icona "più transazioni"
     let iconHTML = "";
     if (group.transactions.length > 1) {
       iconHTML = `<i class="fa-solid fa-circle-plus multiple-icon"></i>`;
     } else {
-      // C'è solo una transazione => mostra icona in base alla descrizione
       const singleTx = group.transactions[0];
       iconHTML = getIconForDescription(singleTx.descrizione);
     }
 
-    // Se c'è solo 1 transazione, mostra la descrizione subito
     let descHTML = "";
     if (group.transactions.length === 1 && group.transactions[0].descrizione) {
       descHTML = ` - <em>${group.transactions[0].descrizione}</em>`;
     }
 
-    // Bottone check (per saldare tutte le transazioni del gruppo)
     const checkBtnHTML = `<button class="action-btn" title="Segna tutte come saldate"><i class="fa-solid fa-check"></i></button>`;
 
     li.innerHTML = `
@@ -178,16 +182,13 @@ function renderAggregatedLists() {
       </div>
     `;
 
-    // Click su "tutte saldate"
     li.querySelector('.action-btn').addEventListener('click', (e) => {
       e.stopPropagation();
       group.transactions.forEach(tx => markAsSettled(tx.id));
     });
 
-    // Se ci sono più transazioni, cliccando su li si espande
     if (group.transactions.length > 1) {
       li.addEventListener('click', function(e) {
-        // Evitiamo di aprire/chiudere se si è cliccato sul bottone check
         if (e.target.closest('.action-btn')) return;
         toggleDetail(li, group.transactions);
       });
@@ -205,11 +206,9 @@ function renderAggregatedLists() {
 function toggleDetail(li, txList) {
   const existingDetail = li.querySelector('.detail');
   if (existingDetail) {
-    // Rimuove il dettaglio se già presente
     existingDetail.remove();
     return;
   }
-  // Crea un nuovo elenco di dettaglio
   const detailUl = document.createElement('ul');
   detailUl.classList.add('detail');
 
@@ -251,80 +250,77 @@ function markAsSettled(id) {
 function renderHistory() {
   historyList.innerHTML = '';
   const settled = transactions.filter(tx => tx.settled);
-  settled.forEach(tx => {
+  if (settled.length === 0) {
     const li = document.createElement('li');
-    const icon = getIconForDescription(tx.descrizione);
-    const typeClass = (tx.type === "Credito") ? "text-credit" : "text-debit";
-
-    // Bottone cestino per eliminazione con conferma
-    const trashBtn = `<button class="action-btn trash-btn" title="Elimina"><i class="fa-solid fa-trash"></i></button>`;
-    li.innerHTML = `
-      <div>
-        <span class="icon-span">${icon}</span>
-        <strong class="${typeClass}">${tx.nome}</strong> 
-        <span>${tx.importo.toFixed(2)}€</span>
-        ${tx.descrizione ? ` - <em>${tx.descrizione}</em>` : ""}
-      </div>
-      <div class="delete-container">
-        ${trashBtn}
-      </div>
-    `;
-
-    // Gestione click sul cestino (doppio click per conferma)
-    const trashButton = li.querySelector('.trash-btn');
-    trashButton.addEventListener('click', function() {
-      if (!trashButton.classList.contains('confirm-delete')) {
-        // Abilita la modalità conferma
-        trashButton.classList.add('confirm-delete');
-        trashButton.innerHTML = `<i class="fa-solid fa-trash"></i><span class="confirmation-text">Conferma</span>`;
-        const textSpan = trashButton.querySelector('.confirmation-text');
-        setTimeout(() => {
-          textSpan.classList.add('show');
-        }, 10);
-
-      } else {
-        // Conferma effettiva: rimuove la transazione
-        deleteTransaction(tx.id);
-      }
-    });
-
-    // Se l’utente abbandona il bottone durante la conferma, torna allo stato iniziale
-    trashButton.addEventListener('mouseleave', function() {
-      if (trashButton.classList.contains('confirm-delete')) {
-        setTimeout(() => {
-          // Se dopo 500ms non è ancora in hover e non è stato cliccato la seconda volta, revert
-          if (!trashButton.matches(':hover') && trashButton.classList.contains('confirm-delete')) {
-            revertTrashButton(trashButton);
-          }
-        }, 500);
-      }
-    });
-
+    li.textContent = "Nessuna transazione conclusa";
+    li.classList.add('empty-history');
     historyList.appendChild(li);
-  });
+  } else {
+    settled.forEach(tx => {
+      const li = document.createElement('li');
+      const icon = getIconForDescription(tx.descrizione);
+      const typeClass = (tx.type === "Credito") ? "text-credit" : "text-debit";
+
+      const trashBtn = `<button class="action-btn trash-btn" title="Elimina"><i class="fa-solid fa-trash"></i></button>`;
+      li.innerHTML = `
+        <div>
+          <span class="icon-span">${icon}</span>
+          <strong class="${typeClass}">${tx.nome}</strong> 
+          <span>${tx.importo.toFixed(2)}€</span>
+          ${tx.descrizione ? ` - <em>${tx.descrizione}</em>` : ""}
+        </div>
+        <div class="delete-container">
+          ${trashBtn}
+        </div>
+      `;
+      
+      const trashButton = li.querySelector('.trash-btn');
+      trashButton.addEventListener('click', function() {
+        if (!trashButton.classList.contains('confirm-delete')) {
+          trashButton.classList.add('confirm-delete');
+          trashButton.innerHTML = `<i class="fa-solid fa-trash"></i><span class="confirmation-text">Conferma</span>`;
+          const textSpan = trashButton.querySelector('.confirmation-text');
+          setTimeout(() => {
+            textSpan.classList.add('show');
+          }, 10);
+        } else {
+          deleteTransaction(tx.id);
+        }
+      });
+
+      trashButton.addEventListener('mouseleave', function() {
+        if (trashButton.classList.contains('confirm-delete')) {
+          setTimeout(() => {
+            if (!trashButton.matches(':hover') && trashButton.classList.contains('confirm-delete')) {
+              revertTrashButton(trashButton);
+            }
+          }, 500);
+        }
+      });
+      
+      historyList.appendChild(li);
+    });
+  }
 }
 
-// Funzione per eliminare la transazione dallo storico
+// Elimina la transazione
 function deleteTransaction(id) {
   transactions = transactions.filter(tx => tx.id !== id);
   saveTransactions();
   renderAll();
 }
 
-// Re-imposta il bottone cestino allo stato iniziale
+// Ripristina il bottone cestino
 function revertTrashButton(button) {
   button.classList.remove('confirm-delete');
   button.innerHTML = `<i class="fa-solid fa-trash"></i>`;
 }
 
-// ---------------------
-// GESTIONE SUGGERIMENTI
-// ---------------------
+/* --------------------- */
+/* GESTIONE SUGGERIMENTI */
+/* --------------------- */
 
-/* NOME: suggerimenti dinamici (dopo 2 caratteri), 
-   chiusura lista dopo il click, 
-   e sovrascrive il testo. */
-
+// Suggerimenti per il campo Nome
 nomeInput.addEventListener('input', function() {
   const query = nomeInput.value.trim().toLowerCase();
   if (query.length < 2) {
@@ -344,11 +340,9 @@ nomeInput.addEventListener('input', function() {
       div.classList.add('suggestion');
       div.textContent = sugg;
       div.addEventListener('mousedown', function(e) {
-        // Impedisce la perdita di focus immediata
         e.preventDefault();
-        nomeInput.value = sugg; // Sovrascrive
-        nomeSuggestionsDiv.style.display = 'none'; 
-        // Resta il focus nel campo
+        nomeInput.value = sugg;
+        nomeSuggestionsDiv.style.display = 'none';
         nomeInput.focus();
       });
       nomeSuggestionsDiv.appendChild(div);
@@ -360,17 +354,14 @@ nomeInput.addEventListener('input', function() {
 });
 
 nomeSuggestionsDiv.addEventListener('mousedown', (e) => {
-  e.preventDefault(); // Evita il blur del campo
+  e.preventDefault();
 });
 
-/* DESCRIZIONE: suggerimenti fissi filtrati in base al testo digitato,
-   chiusura lista dopo il click,
-   e sovrascrive l’intero testo. */
-
+// Suggerimenti per il campo Descrizione
 descrizioneInput.addEventListener('input', function() {
   const query = descrizioneInput.value.trim().toLowerCase();
   const filtered = descriptionSuggestionsData.filter(item =>
-    item.text.toLowerCase().includes(query)
+    item.text.toLowerCase().startsWith(query)
   );
   descrizioneSuggestionsDiv.innerHTML = '';
   if (filtered.length > 0) {
@@ -380,7 +371,6 @@ descrizioneInput.addEventListener('input', function() {
       div.innerHTML = `${item.icon} ${item.text}`;
       div.addEventListener('mousedown', function(e) {
         e.preventDefault();
-        // Sovrascrive l'intero contenuto del campo
         descrizioneInput.value = item.text;
         descrizioneSuggestionsDiv.style.display = 'none';
         descrizioneInput.focus();
@@ -393,12 +383,10 @@ descrizioneInput.addEventListener('input', function() {
   }
 });
 
-// Evitiamo la chiusura immediata in caso di click su suggerimento
 descrizioneSuggestionsDiv.addEventListener('mousedown', function(e) {
   e.preventDefault();
 });
 
-// Quando il campo Descrizione perde focus, chiudiamo i suggerimenti dopo un breve delay
 descrizioneInput.addEventListener('blur', function() {
   setTimeout(() => {
     descrizioneSuggestionsDiv.style.display = 'none';

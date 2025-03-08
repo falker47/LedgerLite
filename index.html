@@ -2,42 +2,50 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Gestione Debiti & Crediti</title>
-  <!-- Font Awesome (senza integrity) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <title>LedgerLite</title>
+  <!-- Google Fonts: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png">
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="LedgerLite">
+  <meta property="og:description" content="Gestisci in modo semplice i tuoi debiti e crediti con LedgerLite">
+  <meta property="og:image" content="preview.png">
+  <meta property="og:type" content="website">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header>
-    <h1>Gestione Debiti & Crediti</h1>
+    <h1>LedgerLite</h1>
     <p class="description">
       Questa applicazione ti permette di gestire in modo semplice i tuoi crediti e debiti.
       Inserisci una transazione specificando il nominativo, l’importo e (opzionalmente) una descrizione.
       Le transazioni con lo stesso nominativo vengono aggregate; se ce n’è solo una, la descrizione appare subito.
       Se ce ne sono più di una, l’icona <i class="fa-solid fa-circle-plus"></i> permette di espandere il dettaglio.
-      Nello storico, clicca sul cestino per eliminarla con conferma.
+      Nello storico, clicca sul cestino per eliminare la transazione con conferma.
     </p>
   </header>
 
   <!-- Sezione Form -->
   <section class="form-section">
     <form id="transaction-form">
-      <!-- Riga 1: Nome e Importo -->
+      <!-- Riga 1: Nome (da solo, 40%) -->
       <div class="form-row">
-        <div class="form-group">
+        <div class="form-group nome-group">
           <label for="nome">Nome:</label>
           <input type="text" id="nome" name="nome" autocomplete="off" required>
           <div id="nome-suggestions" class="suggestions"></div>
         </div>
-        <div class="form-group">
+      </div>
+      <!-- Riga 2: Importo (25%) e Tipo (restante) -->
+      <div class="form-row">
+        <div class="form-group importo-group">
           <label for="importo">Importo:</label>
           <input type="number" id="importo" name="importo" step="0.01" required>
         </div>
-      </div>
-      <!-- Riga 2: Toggle e Descrizione -->
-      <div class="form-row">
-        <div class="form-group toggle-group">
+        <div class="form-group tipo-group">
           <label for="toggle-type">Tipo:</label>
           <div class="toggle-wrapper">
             <div class="toggle-switch">
@@ -50,10 +58,12 @@
             <span id="toggle-text">Credito</span>
           </div>
         </div>
-        <div class="form-group">
+      </div>
+      <!-- Riga 3: Descrizione (da sola, 40%) -->
+      <div class="form-row">
+        <div class="form-group descrizione-group">
           <label for="descrizione">Descrizione (opzionale):</label>
           <input type="text" id="descrizione" name="descrizione" autocomplete="off">
-          <!-- Suggerimenti descrizione -->
           <div id="descrizione-suggestions" class="suggestions"></div>
         </div>
       </div>
