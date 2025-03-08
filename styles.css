@@ -351,6 +351,26 @@ label {
   opacity: 1;
 }
 
+/* Footer Sticky in fondo alla pagina */
+footer {
+  width: 100%;
+  text-align: center;
+  padding: 20px;
+  background: #222;
+  color: #bbb;
+  box-sizing: border-box;
+}
+
+footer a {
+  color: #bbb;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+footer a:hover {
+  color: #56f1d2;
+}
+
 /* Responsive: su schermi piccoli disponi i campi in colonna, dimensioni adeguate */
 @media (max-width: 600px) {
   .form-row {
@@ -390,25 +410,5 @@ label {
     font-size: 1rem;
     /* dimensione testo nei campi */
     padding: 10px;
-  }
-
-  /* Footer Sticky in fondo alla pagina */
-  footer {
-    width: 100%;
-    text-align: center;
-    padding: 20px;
-    background: #222;
-    color: #bbb;
-    box-sizing: border-box;
-  }
-
-  footer a {
-    color: #bbb;
-    text-decoration: none;
-    transition: color 0.3s ease;
-  }
-
-  footer a:hover {
-    color: #56f1d2;
   }
 }
