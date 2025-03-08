@@ -397,9 +397,12 @@ footer a:hover {
     font-size: 1rem;
     /* Più leggibile su mobile */
   }
+
   #add-transaction {
-    display: block;   /* Fa sì che il bottone si comporti come un blocco */
-    margin: 0 auto;   /* Centra il bottone orizzontalmente */
+    display: block;
+    /* Fa sì che il bottone si comporti come un blocco */
+    margin: 0 auto;
+    /* Centra il bottone orizzontalmente */
   }
 
   .lists-section,
