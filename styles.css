@@ -370,26 +370,26 @@ label {
   }
 
   .description {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     /* Ancora più piccolo su mobile */
   }
 
   .form-section {
-    font-size: 1.2rem;
+    font-size: 1rem;
     /* Rimane leggibile su mobile */
   }
 
   .lists-section,
   .history-section {
-    font-size: 1.2rem;
+    font-size: 1rem;
   }
 
   .form-section input[type="text"],
   .form-section input[type="number"],
   .form-section button {
-    font-size: 1.1rem;
+    font-size: 1rem;
     /* dimensione testo nei campi */
-    padding: 12px;
+    padding: 10px;
   }
 
   /* Footer Sticky in fondo alla pagina */
