@@ -55,7 +55,7 @@ loadTransactions();
 renderAll();
 
 // Gestione toggle
-toggleTypeCheckbox.addEventListener('change', function() {
+toggleTypeCheckbox.addEventListener('change', function () {
   if (toggleTypeCheckbox.checked) {
     toggleText.textContent = "Debito";
     toggleText.style.color = "#F44336"; // Rosso per Debito
@@ -67,7 +67,7 @@ toggleTypeCheckbox.addEventListener('change', function() {
 
 
 // Submit del form
-form.addEventListener('submit', function(e) {
+form.addEventListener('submit', function (e) {
   e.preventDefault();
   const nome = nomeInput.value.trim();
   let rawImporto = importoInput.value.trim();
@@ -188,7 +188,7 @@ function renderAggregatedLists() {
     });
 
     if (group.transactions.length > 1) {
-      li.addEventListener('click', function(e) {
+      li.addEventListener('click', function (e) {
         if (e.target.closest('.action-btn')) return;
         toggleDetail(li, group.transactions);
       });
@@ -273,9 +273,9 @@ function renderHistory() {
           ${trashBtn}
         </div>
       `;
-      
+
       const trashButton = li.querySelector('.trash-btn');
-      trashButton.addEventListener('click', function() {
+      trashButton.addEventListener('click', function () {
         if (!trashButton.classList.contains('confirm-delete')) {
           trashButton.classList.add('confirm-delete');
           trashButton.innerHTML = `<i class="fa-solid fa-trash"></i><span class="confirmation-text">Conferma</span>`;
@@ -288,7 +288,7 @@ function renderHistory() {
         }
       });
 
-      trashButton.addEventListener('mouseleave', function() {
+      trashButton.addEventListener('mouseleave', function () {
         if (trashButton.classList.contains('confirm-delete')) {
           setTimeout(() => {
             if (!trashButton.matches(':hover') && trashButton.classList.contains('confirm-delete')) {
@@ -297,7 +297,7 @@ function renderHistory() {
           }, 500);
         }
       });
-      
+
       historyList.appendChild(li);
     });
   }
@@ -321,7 +321,7 @@ function revertTrashButton(button) {
 /* --------------------- */
 
 // Suggerimenti per il campo Nome
-nomeInput.addEventListener('input', function() {
+nomeInput.addEventListener('input', function () {
   const query = nomeInput.value.trim().toLowerCase();
   if (query.length < 2) {
     nomeSuggestionsDiv.style.display = 'none';
@@ -339,7 +339,7 @@ nomeInput.addEventListener('input', function() {
       const div = document.createElement('div');
       div.classList.add('suggestion');
       div.textContent = sugg;
-      div.addEventListener('mousedown', function(e) {
+      div.addEventListener('mousedown', function (e) {
         e.preventDefault();
         nomeInput.value = sugg;
         nomeSuggestionsDiv.style.display = 'none';
@@ -358,7 +358,7 @@ nomeSuggestionsDiv.addEventListener('mousedown', (e) => {
 });
 
 // Suggerimenti per il campo Descrizione
-descrizioneInput.addEventListener('input', function() {
+descrizioneInput.addEventListener('input', function () {
   const query = descrizioneInput.value.trim().toLowerCase();
   const filtered = descriptionSuggestionsData.filter(item =>
     item.text.toLowerCase().startsWith(query)
@@ -369,7 +369,7 @@ descrizioneInput.addEventListener('input', function() {
       const div = document.createElement('div');
       div.classList.add('suggestion');
       div.innerHTML = `${item.icon} ${item.text}`;
-      div.addEventListener('mousedown', function(e) {
+      div.addEventListener('mousedown', function (e) {
         e.preventDefault();
         descrizioneInput.value = item.text;
         descrizioneSuggestionsDiv.style.display = 'none';
@@ -383,11 +383,11 @@ descrizioneInput.addEventListener('input', function() {
   }
 });
 
-descrizioneSuggestionsDiv.addEventListener('mousedown', function(e) {
+descrizioneSuggestionsDiv.addEventListener('mousedown', function (e) {
   e.preventDefault();
 });
 
-descrizioneInput.addEventListener('blur', function() {
+descrizioneInput.addEventListener('blur', function () {
   setTimeout(() => {
     descrizioneSuggestionsDiv.style.display = 'none';
   }, 200);
