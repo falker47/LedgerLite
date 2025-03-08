@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestione Debiti & Crediti</title>
+  <!-- Font Awesome (senza integrity) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Gestione Debiti & Crediti</h1>
+    <p class="description">
+      Questa applicazione ti permette di gestire in modo semplice i tuoi crediti e debiti.
+      Inserisci una transazione specificando il nominativo, l’importo e (opzionalmente) una descrizione.
+      Le transazioni con lo stesso nominativo vengono aggregate; se ce n’è solo una, la descrizione appare subito.
+      Se ce ne sono più di una, l’icona <i class="fa-solid fa-circle-plus"></i> permette di espandere il dettaglio.
+      Nello storico, clicca sul cestino per eliminarla con conferma.
+    </p>
+  </header>
+
+  <!-- Sezione Form -->
+  <section class="form-section">
+    <form id="transaction-form">
+      <!-- Riga 1: Nome e Importo -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nome">Nome:</label>
+          <input type="text" id="nome" name="nome" autocomplete="off" required>
+          <div id="nome-suggestions" class="suggestions"></div>
+        </div>
+        <div class="form-group">
+          <label for="importo">Importo:</label>
+          <input type="number" id="importo" name="importo" step="0.01" required>
+        </div>
+      </div>
+      <!-- Riga 2: Toggle e Descrizione -->
+      <div class="form-row">
+        <div class="form-group toggle-group">
+          <label for="toggle-type">Tipo:</label>
+          <div class="toggle-wrapper">
+            <div class="toggle-switch">
+              <input type="checkbox" id="toggle-type" class="toggle-checkbox">
+              <label for="toggle-type" class="toggle-label">
+                <span class="toggle-inner"></span>
+                <span class="toggle-switch-button"></span>
+              </label>
+            </div>
+            <span id="toggle-text">Credito</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="descrizione">Descrizione (opzionale):</label>
+          <input type="text" id="descrizione" name="descrizione" autocomplete="off">
+          <!-- Suggerimenti descrizione -->
+          <div id="descrizione-suggestions" class="suggestions"></div>
+        </div>
+      </div>
+      <button type="submit" id="add-transaction">Aggiungi Transazione</button>
+    </form>
+  </section>
+
+  <!-- Sezione delle liste: Crediti e Debiti -->
+  <section class="lists-section">
+    <div class="list-container crediti-container">
+      <h2>Crediti</h2>
+      <ul id="crediti-list" class="transaction-list"></ul>
+    </div>
+    <div class="list-container debiti-container">
+      <h2>Debiti</h2>
+      <ul id="debiti-list" class="transaction-list"></ul>
+    </div>
+  </section>
+
+  <!-- Sezione Storico -->
+  <section class="history-section">
+    <h2>Storico Transazioni Saldate</h2>
+    <ul id="history-list" class="transaction-list"></ul>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
