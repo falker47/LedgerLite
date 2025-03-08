@@ -385,8 +385,7 @@ footer a:hover {
   }
 
   h1 {
-    font-size: 1.5rem;
-    /* Più piccolo su mobile */
+    font-size: 1.6rem;
   }
 
   .description {
@@ -396,7 +395,11 @@ footer a:hover {
 
   .form-section {
     font-size: 1rem;
-    /* Rimane leggibile su mobile */
+    /* Più leggibile su mobile */
+  }
+  #add-transaction {
+    display: block;   /* Fa sì che il bottone si comporti come un blocco */
+    margin: 0 auto;   /* Centra il bottone orizzontalmente */
   }
 
   .lists-section,
@@ -409,6 +412,6 @@ footer a:hover {
   .form-section button {
     font-size: 1rem;
     /* dimensione testo nei campi */
-    padding: 10px;
+    padding: 5px;
   }
 }
