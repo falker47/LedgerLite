@@ -53,6 +53,7 @@
               <div class="form-group nome-group" style="flex: 0 0 40%;">
                 <label for="nome">Nome:</label>
                 <input type="text" id="nome" name="nome" autocomplete="on">
+                <div id="nome-suggestions" class="suggestions"></div>
               </div>
               <div class="form-group tipo-group" style="flex: 0 0 40%;">
                 <label for="toggle-type">Tipo:</label>
@@ -90,8 +91,9 @@
             <!-- Riga 1: Nome e toggle sulla stessa riga -->
             <div class="form-row">
               <div class="form-group nome-group" style="flex: 0 0 40%;">
-                <label for="nome-hourly">Nome:</label>
-                <input type="text" id="nome-hourly" name="nome-hourly" autocomplete="on">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" name="nome" autocomplete="on">
+                <div id="nome-suggestions" class="suggestions"></div>
               </div>
               <div class="form-group tipo-group" style="flex: 0 0 40%;">
                 <label for="toggle-type-hourly">Tipo:</label>
