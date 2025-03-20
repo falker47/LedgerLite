@@ -373,9 +373,6 @@ footer a:hover {
 
 /* Responsive: su schermi piccoli disponi i campi in colonna, dimensioni adeguate */
 @media (max-width: 800px) {
-  .form-row {
-    flex-direction: column;
-  }
 
   .nome-group,
   .importo-group,

@@ -10,7 +10,8 @@ const descriptionSuggestionsData = [
   { text: "Cena", icon: "<i class='fa-solid fa-utensils'></i>" },
   { text: "Pranzo", icon: "<i class='fa-solid fa-utensils'></i>" },
   { text: "Viaggio", icon: "<i class='fa-solid fa-plane'></i>" },
-  { text: "Regalo", icon: "<i class='fa-solid fa-gift'></i>" }
+  { text: "Regalo", icon: "<i class='fa-solid fa-gift'></i>" },
+  { text: "Ripetizioni", icon: "<i class='fa-solid fa-graduation-cap'></i>" }
 ];
 
 // Mappatura delle icone per le descrizioni
@@ -19,7 +20,8 @@ const descriptionIcons = {
   "cena": "<i class='fa-solid fa-utensils'></i>",
   "pranzo": "<i class='fa-solid fa-utensils'></i>",
   "viaggio": "<i class='fa-solid fa-plane'></i>",
-  "regalo": "<i class='fa-solid fa-gift'></i>"
+  "regalo": "<i class='fa-solid fa-gift'></i>",
+  "ripetizioni": "<i class='fa-solid fa-graduation-cap'></i>"
 };
 
 // Elementi del DOM per la modalità Direct (S1)

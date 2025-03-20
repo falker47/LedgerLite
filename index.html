@@ -29,9 +29,9 @@
     <header>
       <h1>LedgerLite</h1>
       <p class="description">
-        Questa applicazione ti permette di gestire in modo semplice i tuoi crediti e debiti.<br>
-        Inserisci una transazione specificando il nominativo, l’importo e una descrizione (facoltativa).<br>
-        Viene tutto salvato in locale dunque non cancellare la cache del browser per non perdere i dati salvati!
+        LedgerLite ti permette di gestire in modo semplice i tuoi crediti e debiti.<br>
+        Basta inserire nome, se è un credito/debito e l'importo!<br>
+        Non cancellare la cache del browser se non vuoi perdere i dati salvati!
       </p>
     </header>
 
@@ -79,7 +79,7 @@
             <div class="form-row">
               <div class="form-group descrizione-group">
                 <label for="descrizione">Descrizione (opzionale):</label>
-                <input type="text" id="descrizione" name="descrizione" autocomplete="off">
+                <input type="text" id="descrizione" name="descrizione" autocomplete="on">
                 <div id="descrizione-suggestions" class="suggestions"></div>
               </div>
             </div>
@@ -115,7 +115,7 @@
               </div>
               <div class="form-group importo-group" style="flex: 0 0 40%;">
                 <label for="ore">Tempo:</label>
-                <input type="text" id="ore" name="ore" placeholder="ore (1:30) o minuti (90)">
+                <input type="text" id="ore" name="ore" placeholder="h (1:30) o min (90)">
               </div>
             </div>
             <!-- Riga 3: Descrizione opzionale -->
