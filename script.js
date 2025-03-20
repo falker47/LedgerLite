@@ -1,10 +1,10 @@
 // script.js
 
-// Array globale delle transazioni
+// Array globale delle transazioni e chiave per il localStorage
 let transactions = [];
 const localStorageKey = 'debitiCreditiTransactions';
 
-// Suggerimenti fissi per la descrizione (testo e icona associata)
+// Suggerimenti fissi per la descrizione (già esistenti)
 const descriptionSuggestionsData = [
   { text: "Spesa", icon: "<i class='fa-solid fa-cart-shopping'></i>" },
   { text: "Cena", icon: "<i class='fa-solid fa-utensils'></i>" },
@@ -13,7 +13,7 @@ const descriptionSuggestionsData = [
   { text: "Regalo", icon: "<i class='fa-solid fa-gift'></i>" }
 ];
 
-// Mappatura delle icone per le descrizioni nelle liste
+// Mappatura delle icone per le descrizioni
 const descriptionIcons = {
   "spesa": "<i class='fa-solid fa-cart-shopping'></i>",
   "cena": "<i class='fa-solid fa-utensils'></i>",
@@ -22,22 +22,40 @@ const descriptionIcons = {
   "regalo": "<i class='fa-solid fa-gift'></i>"
 };
 
-// Elementi del DOM
+// Elementi del DOM per la modalità Direct (S1)
 const form = document.getElementById('transaction-form');
 const nomeInput = document.getElementById('nome');
 const importoInput = document.getElementById('importo');
 const descrizioneInput = document.getElementById('descrizione');
 const toggleTypeCheckbox = document.getElementById('toggle-type');
 const toggleText = document.getElementById('toggle-text');
-
 const nomeSuggestionsDiv = document.getElementById('nome-suggestions');
 const descrizioneSuggestionsDiv = document.getElementById('descrizione-suggestions');
 
+// Elementi del DOM per la modalità Hourly (S2)
+const nomeHourlyInput = document.getElementById('nome-hourly');
+const tariffaInput = document.getElementById('tariffa');
+const oreInput = document.getElementById('ore');
+const descrizioneHourlyInput = document.getElementById('descrizione-hourly');
+const toggleTypeHourlyCheckbox = document.getElementById('toggle-type-hourly');
+const toggleTextHourly = document.getElementById('toggle-text-hourly');
+
+// Contenitori delle due modalità
+const directModeContainer = document.getElementById('direct-mode');
+const hourlyModeContainer = document.getElementById('hourly-mode');
+
+// Elementi per il tab-switch
+const tabButtons = document.querySelectorAll('.tab');
+
+// Liste e storico
 const creditiList = document.getElementById('crediti-list');
 const debitiList = document.getElementById('debiti-list');
 const historyList = document.getElementById('history-list');
 
-// Carica transazioni dal localStorage
+// Modalità attiva ("direct" o "hourly")
+let activeMode = "direct";
+
+// Carica le transazioni dal localStorage
 function loadTransactions() {
   const data = localStorage.getItem(localStorageKey);
   if (data) {
@@ -45,74 +63,169 @@ function loadTransactions() {
   }
 }
 
-// Salva transazioni nel localStorage
+// Salva le transazioni nel localStorage
 function saveTransactions() {
   localStorage.setItem(localStorageKey, JSON.stringify(transactions));
 }
 
-// Inizializza
+// Inizializzazione
 loadTransactions();
 renderAll();
 
-// Gestione toggle
+// Gestione del toggle per la modalità Direct
 toggleTypeCheckbox.addEventListener('change', function () {
   if (toggleTypeCheckbox.checked) {
     toggleText.textContent = "Debito";
-    toggleText.style.color = "#F44336"; // Rosso per Debito
+    toggleText.style.color = "#F44336";
   } else {
     toggleText.textContent = "Credito";
-    toggleText.style.color = "#4CAF50"; // Verde per Credito
+    toggleText.style.color = "#4CAF50";
   }
 });
 
+// Gestione del toggle per la modalità Hourly
+toggleTypeHourlyCheckbox.addEventListener('change', function () {
+  if (toggleTypeHourlyCheckbox.checked) {
+    toggleTextHourly.textContent = "Debito";
+    toggleTextHourly.style.color = "#F44336";
+  } else {
+    toggleTextHourly.textContent = "Credito";
+    toggleTextHourly.style.color = "#4CAF50";
+  }
+});
 
-// Submit del form
+// Gestione dello switch tra le modalità tramite tab
+tabButtons.forEach(tab => {
+  tab.addEventListener('click', function() {
+    activeMode = tab.getAttribute('data-mode');
+    tabButtons.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    if (activeMode === "direct") {
+      directModeContainer.classList.add('active');
+      hourlyModeContainer.classList.remove('active');
+      // Imposta gli attributi required per la modalità Direct
+      nomeInput.setAttribute('required', '');
+      importoInput.setAttribute('required', '');
+      // Rimuove required dai campi della modalità Hourly
+      nomeHourlyInput.removeAttribute('required');
+      tariffaInput.removeAttribute('required');
+      oreInput.removeAttribute('required');
+    } else {
+      hourlyModeContainer.classList.add('active');
+      directModeContainer.classList.remove('active');
+      // Imposta gli attributi required per la modalità Hourly
+      nomeHourlyInput.setAttribute('required', '');
+      tariffaInput.setAttribute('required', '');
+      oreInput.setAttribute('required', '');
+      // Rimuove required dai campi della modalità Direct
+      nomeInput.removeAttribute('required');
+      importoInput.removeAttribute('required');
+    }
+    form.reset();
+    // Resetta i toggle alla modalità default
+    toggleTypeCheckbox.checked = false;
+    toggleText.textContent = "Credito";
+    toggleText.style.color = "#4CAF50";
+    toggleTypeHourlyCheckbox.checked = false;
+    toggleTextHourly.textContent = "Credito";
+    toggleTextHourly.style.color = "#4CAF50";
+  });
+});
+
+// Funzione per interpretare il campo "Ore"
+function parseOre(value) {
+  if (!value) return 0;
+  if (value.includes(":") || value.includes(",") || value.includes("-") || value.includes(" ")) {
+    const parts = value.split(/[:,\-\s]+/);
+    if (parts.length >= 2) {
+      const hours = parseFloat(parts[0]) || 0;
+      const minutes = parseFloat(parts[1]) || 0;
+      return hours + minutes / 60;
+    } else {
+      return parseFloat(value) || 0;
+    }
+  } else {
+    // Senza separatore, interpreta come minuti
+    const minutes = parseFloat(value);
+    return minutes / 60;
+  }
+}
+
+// Gestione submit del form
 form.addEventListener('submit', function (e) {
   e.preventDefault();
-  const nome = nomeInput.value.trim();
-  let rawImporto = importoInput.value.trim();
-  let importo = parseFloat(rawImporto);
-  if (!nome || isNaN(importo)) return;
-
-  // Se l'utente ha inserito il segno "-" manualmente, forziamo il debito
-  if (rawImporto.indexOf('-') !== -1) {
-    importo = -Math.abs(importo);
+  let transaction = null;
+  if (activeMode === "direct") {
+    // Modalità Direct (S1)
+    const nome = nomeInput.value.trim();
+    let rawImporto = importoInput.value.trim();
+    let importo = parseFloat(rawImporto);
+    if (!nome || isNaN(importo)) return;
+    if (rawImporto.indexOf('-') !== -1) {
+      importo = -Math.abs(importo);
+    } else {
+      if (toggleTypeCheckbox.checked) {
+        importo = -Math.abs(importo);
+      } else {
+        importo = Math.abs(importo);
+      }
+    }
+    const descrizione = descrizioneInput.value.trim();
+    const type = importo >= 0 ? "Credito" : "Debito";
+    transaction = {
+      id: Date.now(),
+      nome,
+      importo,
+      descrizione,
+      type,
+      settled: false,
+      timestamp: new Date().toISOString()
+    };
   } else {
-    // Altrimenti, usiamo il toggle per determinare il segno
-    if (toggleTypeCheckbox.checked) {
+    // Modalità Hourly (S2)
+    const nome = nomeHourlyInput.value.trim();
+    let tariffa = parseFloat(tariffaInput.value.trim());
+    const oreRaw = oreInput.value.trim();
+    if (!nome || isNaN(tariffa) || !oreRaw) return;
+    const oreValue = parseOre(oreRaw);
+    let importo = tariffa * oreValue;
+    if (toggleTypeHourlyCheckbox.checked) {
       importo = -Math.abs(importo);
     } else {
       importo = Math.abs(importo);
     }
+    const descrizione = descrizioneHourlyInput.value.trim();
+    const type = importo >= 0 ? "Credito" : "Debito";
+    transaction = {
+      id: Date.now(),
+      nome,
+      importo,
+      descrizione,
+      type,
+      settled: false,
+      timestamp: new Date().toISOString()
+    };
   }
-  const descrizione = descrizioneInput.value.trim();
-  const type = importo >= 0 ? "Credito" : "Debito";
-
-  const transaction = {
-    id: Date.now(),
-    nome,
-    importo,
-    descrizione,
-    type,
-    settled: false,
-    timestamp: new Date().toISOString()
-  };
   transactions.push(transaction);
   saveTransactions();
   renderAll();
   form.reset();
-  // Reset del toggle
+  // Reset dei toggle
   toggleTypeCheckbox.checked = false;
   toggleText.textContent = "Credito";
+  toggleText.style.color = "#4CAF50";
+  toggleTypeHourlyCheckbox.checked = false;
+  toggleTextHourly.textContent = "Credito";
+  toggleTextHourly.style.color = "#4CAF50";
 });
 
-// Renderizza tutte le liste
+// Renderizza tutte le liste (aggregato e storico)
 function renderAll() {
   renderAggregatedLists();
   renderHistory();
 }
 
-// Raggruppa le transazioni attive (non saldate) per nominativo e tipo
+// Raggruppa le transazioni attive per nominativo e tipo
 function getAggregatedActive() {
   const aggregated = {};
   transactions.forEach(tx => {
@@ -133,7 +246,7 @@ function getAggregatedActive() {
   return aggregated;
 }
 
-// Ottiene l'icona in base alla descrizione (prima occorrenza)
+// Restituisce l'icona in base alla descrizione
 function getIconForDescription(text) {
   if (!text) return "";
   const lowerText = text.toLowerCase();
@@ -145,17 +258,14 @@ function getIconForDescription(text) {
   return "";
 }
 
-// Renderizza crediti e debiti aggregati
+// Renderizza le liste aggregate per crediti e debiti includendo i pulsanti per segnare e cancellare
 function renderAggregatedLists() {
   creditiList.innerHTML = '';
   debitiList.innerHTML = '';
-
   const aggregated = getAggregatedActive();
   for (let key in aggregated) {
     const group = aggregated[key];
     const li = document.createElement('li');
-
-    // Se più transazioni: mostra icona "più transazioni"
     let iconHTML = "";
     if (group.transactions.length > 1) {
       iconHTML = `<i class="fa-solid fa-circle-plus multiple-icon"></i>`;
@@ -163,37 +273,63 @@ function renderAggregatedLists() {
       const singleTx = group.transactions[0];
       iconHTML = getIconForDescription(singleTx.descrizione);
     }
-
     let descHTML = "";
     if (group.transactions.length === 1 && group.transactions[0].descrizione) {
       descHTML = ` - <em>${group.transactions[0].descrizione}</em>`;
     }
-
-    const checkBtnHTML = `<button class="action-btn" title="Segna tutte come saldate"><i class="fa-solid fa-check"></i></button>`;
-
+    // Bottone per segnare come saldato e pulsante trash per eliminare
+    const settleBtnHTML = `<button class="action-btn settle-btn" title="Segna tutte come saldate"><i class="fa-solid fa-check"></i></button>`;
+    const trashBtnHTML = `<button class="action-btn trash-btn" title="Elimina"><i class="fa-solid fa-trash"></i></button>`;
     li.innerHTML = `
       <div>
         <span class="icon-span">${iconHTML}</span>
         <strong>${group.nome}</strong>${descHTML}
       </div>
-      <div>
+      <div class="button-group">
+        ${settleBtnHTML}
+        ${trashBtnHTML}
         <span class="amount">${group.total.toFixed(2)}€</span>
-        ${checkBtnHTML}
       </div>
     `;
-
-    li.querySelector('.action-btn').addEventListener('click', (e) => {
+    // Evento per il bottone settle
+    li.querySelector('.settle-btn').addEventListener('click', (e) => {
       e.stopPropagation();
       group.transactions.forEach(tx => markAsSettled(tx.id));
     });
+    // Evento per il pulsante trash (eliminazione del gruppo)
+    const groupTrashBtn = li.querySelector('.trash-btn');
 
+    groupTrashBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (!groupTrashBtn.classList.contains('confirm-delete')) {
+    groupTrashBtn.classList.add('confirm-delete');
+    // Imposta solo l'icona iniziale
+    groupTrashBtn.innerHTML = `<i class="fa-solid fa-trash"></i>`;
+    // Crea dinamicamente lo span "Conferma"
+    const confSpan = document.createElement('span');
+    confSpan.className = "confirmation-text";
+    confSpan.textContent = "Conferma";
+    groupTrashBtn.appendChild(confSpan);
+    // Aggiungi la classe 'show' dopo un breve ritardo per attivare la transizione
+    setTimeout(() => {
+      confSpan.classList.add('show');
+    }, 10);
+  } else {
+    deleteGroupTransactions(group.nome, group.type);
+  }
+});
+
+    groupTrashBtn.addEventListener('mouseleave', function() {
+      if (groupTrashBtn.classList.contains('confirm-delete')) {
+        revertTrashButton(groupTrashBtn);
+      }
+    });
     if (group.transactions.length > 1) {
       li.addEventListener('click', function (e) {
         if (e.target.closest('.action-btn')) return;
         toggleDetail(li, group.transactions);
       });
     }
-
     if (group.type === "Credito") {
       creditiList.appendChild(li);
     } else {
@@ -202,7 +338,7 @@ function renderAggregatedLists() {
   }
 }
 
-// Mostra/nasconde il dettaglio delle transazioni multiple
+// Mostra/nasconde il dettaglio per transazioni multiple, aggiungendo i pulsanti settle e trash per ogni dettaglio
 function toggleDetail(li, txList) {
   const existingDetail = li.querySelector('.detail');
   if (existingDetail) {
@@ -211,23 +347,50 @@ function toggleDetail(li, txList) {
   }
   const detailUl = document.createElement('ul');
   detailUl.classList.add('detail');
-
   txList.forEach(tx => {
     const detailLi = document.createElement('li');
     const txIcon = getIconForDescription(tx.descrizione);
     const desc = tx.descrizione ? ` - <em>${tx.descrizione}</em>` : "";
+    const settleBtnHTML = `<button class="action-btn settle-btn" title="Segna come saldato"><i class="fa-solid fa-check"></i></button>`;
+    const trashBtnHTML = `<button class="action-btn trash-btn" title="Elimina"><i class="fa-solid fa-trash"></i></button>`;
     detailLi.innerHTML = `
       <div>
         <span class="icon-span">${txIcon}</span> 
         ${tx.importo.toFixed(2)}€${desc}
       </div>
-      <button class="action-btn" title="Segna come saldato">
-        <i class="fa-solid fa-check"></i>
-      </button>
+      <div class="button-group">
+        ${settleBtnHTML}
+        ${trashBtnHTML}
+      </div>
     `;
-    detailLi.querySelector('.action-btn').addEventListener('click', (e) => {
+    detailLi.querySelector('.settle-btn').addEventListener('click', (e) => {
       e.stopPropagation();
       markAsSettled(tx.id);
+    });
+    const detailTrashBtn = detailLi.querySelector('.trash-btn');
+
+    detailTrashBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (!detailTrashBtn.classList.contains('confirm-delete')) {
+    detailTrashBtn.classList.add('confirm-delete');
+    detailTrashBtn.innerHTML = `<i class="fa-solid fa-trash"></i>`;
+    const confSpan = document.createElement('span');
+    confSpan.className = "confirmation-text";
+    confSpan.textContent = "Conferma";
+    detailTrashBtn.appendChild(confSpan);
+    setTimeout(() => {
+      confSpan.classList.add('show');
+    }, 10);
+  } else {
+    deleteTransaction(tx.id);
+  }
+});
+
+
+    detailTrashBtn.addEventListener('mouseleave', function() {
+      if (detailTrashBtn.classList.contains('confirm-delete')) {
+        revertTrashButton(detailTrashBtn);
+      }
     });
     detailUl.appendChild(detailLi);
   });
@@ -246,7 +409,7 @@ function markAsSettled(id) {
   renderAll();
 }
 
-// Renderizza lo storico
+// Renderizza lo storico delle transazioni saldate
 function renderHistory() {
   historyList.innerHTML = '';
   const settled = transactions.filter(tx => tx.settled);
@@ -260,8 +423,7 @@ function renderHistory() {
       const li = document.createElement('li');
       const icon = getIconForDescription(tx.descrizione);
       const typeClass = (tx.type === "Credito") ? "text-credit" : "text-debit";
-
-      const trashBtn = `<button class="action-btn trash-btn" title="Elimina"><i class="fa-solid fa-trash"></i></button>`;
+      const trashBtnHTML = `<button class="action-btn trash-btn" title="Elimina"><i class="fa-solid fa-trash"></i></button>`;
       li.innerHTML = `
         <div>
           <span class="icon-span">${icon}</span>
@@ -270,47 +432,55 @@ function renderHistory() {
           ${tx.descrizione ? ` - <em>${tx.descrizione}</em>` : ""}
         </div>
         <div class="delete-container">
-          ${trashBtn}
+          ${trashBtnHTML}
         </div>
       `;
-
       const trashButton = li.querySelector('.trash-btn');
       trashButton.addEventListener('click', function () {
         if (!trashButton.classList.contains('confirm-delete')) {
           trashButton.classList.add('confirm-delete');
-          trashButton.innerHTML = `<i class="fa-solid fa-trash"></i><span class="confirmation-text">Conferma</span>`;
-          const textSpan = trashButton.querySelector('.confirmation-text');
+          trashButton.innerHTML = `<i class="fa-solid fa-trash"></i>`;
+          const confSpan = document.createElement('span');
+          confSpan.className = "confirmation-text";
+          confSpan.textContent = "Conferma";
+          trashButton.appendChild(confSpan);
           setTimeout(() => {
-            textSpan.classList.add('show');
+            confSpan.classList.add('show');
           }, 10);
         } else {
           deleteTransaction(tx.id);
         }
       });
-
       trashButton.addEventListener('mouseleave', function () {
         if (trashButton.classList.contains('confirm-delete')) {
-          setTimeout(() => {
-            if (!trashButton.matches(':hover') && trashButton.classList.contains('confirm-delete')) {
-              revertTrashButton(trashButton);
-            }
-          }, 500);
+          revertTrashButton(trashButton);
         }
       });
-
       historyList.appendChild(li);
     });
   }
 }
 
-// Elimina la transazione
+// Elimina una singola transazione
 function deleteTransaction(id) {
   transactions = transactions.filter(tx => tx.id !== id);
   saveTransactions();
   renderAll();
 }
 
-// Ripristina il bottone cestino
+// Elimina tutte le transazioni (non saldate) di un gruppo (per nome e tipo)
+function deleteGroupTransactions(nome, type) {
+  transactions = transactions.filter(tx => {
+    if (!tx.settled && tx.nome === nome && tx.type === type) {
+      return false;
+    }
+    return true;
+  });
+  saveTransactions();
+  renderAll();
+}
+
+// Ripristina lo stato iniziale del pulsante trash
 function revertTrashButton(button) {
   button.classList.remove('confirm-delete');
   button.innerHTML = `<i class="fa-solid fa-trash"></i>`;
@@ -318,9 +488,7 @@ function revertTrashButton(button) {
 
 /* --------------------- */
 /* GESTIONE SUGGERIMENTI */
-/* --------------------- */
-
-// Suggerimenti per il campo Nome
+// Suggerimenti per il campo Nome (modalità Direct)
 nomeInput.addEventListener('input', function () {
   const query = nomeInput.value.trim().toLowerCase();
   if (query.length < 2) {
@@ -352,12 +520,11 @@ nomeInput.addEventListener('input', function () {
     nomeSuggestionsDiv.style.display = 'none';
   }
 });
-
 nomeSuggestionsDiv.addEventListener('mousedown', (e) => {
   e.preventDefault();
 });
 
-// Suggerimenti per il campo Descrizione
+// Suggerimenti per il campo Descrizione (modalità Direct)
 descrizioneInput.addEventListener('input', function () {
   const query = descrizioneInput.value.trim().toLowerCase();
   const filtered = descriptionSuggestionsData.filter(item =>
@@ -382,11 +549,9 @@ descrizioneInput.addEventListener('input', function () {
     descrizioneSuggestionsDiv.style.display = 'none';
   }
 });
-
 descrizioneSuggestionsDiv.addEventListener('mousedown', function (e) {
   e.preventDefault();
 });
-
 descrizioneInput.addEventListener('blur', function () {
   setTimeout(() => {
     descrizioneSuggestionsDiv.style.display = 'none';

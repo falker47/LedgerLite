@@ -418,3 +418,49 @@ footer a:hover {
     padding: 5px;
   }
 }
+
+/* Tab switch styles */
+.tab-switch {
+  display: flex;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 15px;
+}
+
+.tab {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  background: #f0f0f0;
+  border: none;
+  outline: none;
+  transition: background-color 0.3s ease;
+}
+
+.tab.active {
+  background: #fff;
+  border-bottom: 2px solid #2196F3;
+}
+
+/* Tab content smooth transition */
+.tab-content {
+  transition: opacity 0.5s ease, max-height 0.5s ease;
+  overflow: hidden;
+}
+
+.tab-content:not(.active) {
+  opacity: 0;
+  max-height: 0;
+  pointer-events: none;
+}
+
+.tab-content.active {
+  opacity: 1;
+  max-height: 1000px; /* Sufficiente per mostrare il contenuto */
+  pointer-events: all;
+}
+
+/* Allineamento verticale dei toggle e input in modalità Hourly */
+#hourly-mode .form-row {
+  align-items: center;
+}

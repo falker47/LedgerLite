@@ -6,18 +6,18 @@
   <title>LedgerLite</title>
   <!-- Google Fonts: Poppins -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-   <!-- Favicons -->
-   <link href="https://i.postimg.cc/rmCxjswj/main-falker-logo-gecko-transparent-minimal.png" rel="icon">
-   <link href="https://i.postimg.cc/rmCxjswj/main-falker-logo-gecko-transparent-minimal.png" rel="apple-touch-icon">
+  <!-- Favicons -->
+  <link href="https://i.postimg.cc/rmCxjswj/main-falker-logo-gecko-transparent-minimal.png" rel="icon">
+  <link href="https://i.postimg.cc/rmCxjswj/main-falker-logo-gecko-transparent-minimal.png" rel="apple-touch-icon">
   <!-- Open Graph Meta Tags -->
   <meta property="og:title" content="LedgerLite">
   <meta property="og:description" content="Gestisci in modo semplice i tuoi debiti e crediti con LedgerLite">
   <meta property="og:image" content="ledgerlite-thumb.webp">
   <meta property="og:type" content="ledgerlite-thumb">
   <meta name="twitter:card" content="summary_large_image">
-   <meta name="twitter:title" content="LedgerLite">
-   <meta name="twitter:description" content="Gestisci in modo semplice i tuoi debiti e crediti con LedgerLite">
-   <meta name="twitter:image" content="ledgerlite-thumb.webp">
+  <meta name="twitter:title" content="LedgerLite">
+  <meta name="twitter:description" content="Gestisci in modo semplice i tuoi debiti e crediti con LedgerLite">
+  <meta name="twitter:image" content="ledgerlite-thumb.webp">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" 
         crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -26,78 +26,130 @@
 </head>
 <body>
   <div class="content-container">
-  <header>
-    <h1>LedgerLite</h1>
-    <p class="description">
-      Questa applicazione ti permette di gestire in modo semplice i tuoi crediti e debiti.
-      Inserisci una transazione specificando il nominativo, l’importo e una descrizione (facoltativa).
-    </p>
-  </header>
+    <header>
+      <h1>LedgerLite</h1>
+      <p class="description">
+        Questa applicazione ti permette di gestire in modo semplice i tuoi crediti e debiti.<br>
+        Inserisci una transazione specificando il nominativo, l’importo e una descrizione (facoltativa).<br>
+        Viene tutto salvato in locale dunque non cancellare la cache del browser per non perdere i dati salvati!
+      </p>
+    </header>
 
-  <!-- Main Content -->
-  <main>
-    <!-- Sezione Form -->
-    <section class="form-section">
-      <form id="transaction-form">
-        <!-- Riga 1: Nome (da solo, 40%) -->
-        <div class="form-row">
-          <div class="form-group nome-group">
-            <label for="nome">Nome:</label>
-            <input type="text" id="nome" name="nome" autocomplete="off" required>
-            <div id="nome-suggestions" class="suggestions"></div>
-          </div>
-        </div>
-        <!-- Riga 2: Importo (25%) e Tipo (restante) -->
-        <div class="form-row">
-          <div class="form-group importo-group">
-            <label for="importo">Importo:</label>
-            <input type="number" id="importo" name="importo" step="0.01" required>
-          </div>
-          <div class="form-group tipo-group">
-            <label for="toggle-type">Tipo:</label>
-            <div class="toggle-wrapper">
-              <div class="toggle-switch">
-                <input type="checkbox" id="toggle-type" class="toggle-checkbox">
-                <label for="toggle-type" class="toggle-label">
-                  <span class="toggle-inner"></span>
-                  <span class="toggle-switch-button"></span>
-                </label>
+    <!-- Main Content -->
+    <main>
+      <!-- Tab Switch -->
+      <div class="tab-switch">
+        <button type="button" class="tab active" data-mode="direct">Importo Diretto</button>
+        <button type="button" class="tab" data-mode="hourly">Tariffa Oraria</button>
+      </div>
+
+      <!-- Sezione Form -->
+      <section class="form-section">
+        <form id="transaction-form">
+          <!-- Modalità Direct (S1) -->
+          <div id="direct-mode" class="tab-content active">
+            <!-- Riga 1: Nome e toggle sulla stessa riga -->
+            <div class="form-row">
+              <div class="form-group nome-group" style="flex: 0 0 40%;">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" name="nome" autocomplete="on">
               </div>
-              <span id="toggle-text">Credito</span>
+              <div class="form-group tipo-group" style="flex: 0 0 40%;">
+                <label for="toggle-type">Tipo:</label>
+                <div class="toggle-wrapper">
+                  <div class="toggle-switch">
+                    <input type="checkbox" id="toggle-type" class="toggle-checkbox">
+                    <label for="toggle-type" class="toggle-label">
+                      <span class="toggle-inner"></span>
+                      <span class="toggle-switch-button"></span>
+                    </label>
+                  </div>
+                  <span id="toggle-text">Credito</span>
+                </div>
+              </div>
+            </div>
+            <!-- Riga 2: Importo e toggle -->
+            <div class="form-row">
+              <div class="form-group importo-group" style="flex: 0 0 40%;">
+                <label for="importo">Importo:</label>
+                <input type="number" id="importo" name="importo" step="0.01" required>
+              </div>
+            </div>
+            <!-- Riga 3: Descrizione opzionale -->
+            <div class="form-row">
+              <div class="form-group descrizione-group">
+                <label for="descrizione">Descrizione (opzionale):</label>
+                <input type="text" id="descrizione" name="descrizione" autocomplete="off">
+                <div id="descrizione-suggestions" class="suggestions"></div>
+              </div>
             </div>
           </div>
-        </div>
-        <!-- Riga 3: Descrizione (da sola, 40%) -->
-        <div class="form-row">
-          <div class="form-group descrizione-group">
-            <label for="descrizione">Descrizione (opzionale):</label>
-            <input type="text" id="descrizione" name="descrizione" autocomplete="off">
-            <div id="descrizione-suggestions" class="suggestions"></div>
+
+          <!-- Modalità Hourly (S2) -->
+          <div id="hourly-mode" class="tab-content">
+            <!-- Riga 1: Nome e toggle sulla stessa riga -->
+            <div class="form-row">
+              <div class="form-group nome-group" style="flex: 0 0 40%;">
+                <label for="nome-hourly">Nome:</label>
+                <input type="text" id="nome-hourly" name="nome-hourly" autocomplete="on">
+              </div>
+              <div class="form-group tipo-group" style="flex: 0 0 40%;">
+                <label for="toggle-type-hourly">Tipo:</label>
+                <div class="toggle-wrapper">
+                  <div class="toggle-switch">
+                    <input type="checkbox" id="toggle-type-hourly" class="toggle-checkbox">
+                    <label for="toggle-type-hourly" class="toggle-label">
+                      <span class="toggle-inner"></span>
+                      <span class="toggle-switch-button"></span>
+                    </label>
+                  </div>
+                  <span id="toggle-text">Credito</span>
+                </div>
+              </div>
+            </div>
+            <!-- Riga 2: Tariffa Oraria e Ore -->
+            <div class="form-row">
+              <div class="form-group importo-group" style="flex: 0 0 40%;">
+                <label for="tariffa">Tariffa Oraria:</label>
+                <input type="number" id="tariffa" name="tariffa" step="0.01">
+              </div>
+              <div class="form-group importo-group" style="flex: 0 0 40%;">
+                <label for="ore">Tempo:</label>
+                <input type="text" id="ore" name="ore" placeholder="ore (1:30) o minuti (90)">
+              </div>
+            </div>
+            <!-- Riga 3: Descrizione opzionale -->
+            <div class="form-row">
+              <div class="form-group descrizione-group">
+                <label for="descrizione-hourly">Descrizione (opzionale):</label>
+                <input type="text" id="descrizione-hourly" name="descrizione-hourly" autocomplete="on">
+              </div>
+            </div>
           </div>
+
+          <button type="submit" id="add-transaction">Aggiungi Transazione</button>
+        </form>
+      </section>
+
+      <!-- Sezione delle liste: Crediti e Debiti -->
+      <section class="lists-section">
+        <div class="list-container crediti-container">
+          <h2>Crediti</h2>
+          <ul id="crediti-list" class="transaction-list"></ul>
         </div>
-        <button type="submit" id="add-transaction">Aggiungi Transazione</button>
-      </form>
-    </section>
+        <div class="list-container debiti-container">
+          <h2>Debiti</h2>
+          <ul id="debiti-list" class="transaction-list"></ul>
+        </div>
+      </section>
 
-    <!-- Sezione delle liste: Crediti e Debiti -->
-    <section class="lists-section">
-      <div class="list-container crediti-container">
-        <h2>Crediti</h2>
-        <ul id="crediti-list" class="transaction-list"></ul>
-      </div>
-      <div class="list-container debiti-container">
-        <h2>Debiti</h2>
-        <ul id="debiti-list" class="transaction-list"></ul>
-      </div>
-    </section>
-
-    <!-- Sezione Storico -->
-    <section class="history-section">
-      <h2>Storico Transazioni Saldate</h2>
-      <ul id="history-list" class="transaction-list"></ul>
-    </section>
-  </main>
-</div>
+      <!-- Sezione Storico -->
+      <section class="history-section">
+        <h2>Storico Transazioni Saldate</h2>
+        <ul id="history-list" class="transaction-list"></ul>
+      </section>
+    </main>
+  </div>
 
   <!-- FOOTER -->
   <footer>
