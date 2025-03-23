@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta charset="UTF-8">
@@ -19,11 +20,12 @@
   <meta name="twitter:description" content="Gestisci in modo semplice i tuoi debiti e crediti con LedgerLite">
   <meta name="twitter:image" content="ledgerlite-thumb.webp">
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" 
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- Foglio di stile -->
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
   <div class="content-container">
     <header>
@@ -31,7 +33,7 @@
       <p class="description">
         LedgerLite ti permette di gestire in modo semplice i tuoi crediti e debiti.<br>
         Basta inserire nome, se è un credito/debito e l'importo!<br>
-        Non cancellare la cache del browser per non perdere i dati salvati!
+        Non cancellare la cache del browser se non vuoi perdere i dati salvati!
       </p>
     </header>
 
@@ -53,7 +55,6 @@
               <div class="form-group nome-group" style="flex: 0 0 40%;">
                 <label for="nome">Nome:</label>
                 <input type="text" id="nome" name="nome" autocomplete="on">
-                <div id="nome-suggestions" class="suggestions"></div>
               </div>
               <div class="form-group tipo-group" style="flex: 0 0 40%;">
                 <label for="toggle-type">Tipo:</label>
@@ -91,9 +92,8 @@
             <!-- Riga 1: Nome e toggle sulla stessa riga -->
             <div class="form-row">
               <div class="form-group nome-group" style="flex: 0 0 40%;">
-                <label for="nome">Nome:</label>
-                <input type="text" id="nome" name="nome" autocomplete="on">
-                <div id="nome-suggestions" class="suggestions"></div>
+                <label for="nome-hourly">Nome:</label>
+                <input type="text" id="nome-hourly" name="nome-hourly" autocomplete="on">
               </div>
               <div class="form-group tipo-group" style="flex: 0 0 40%;">
                 <label for="toggle-type-hourly">Tipo:</label>
@@ -168,4 +168,5 @@
     document.getElementById("currentYear").textContent = new Date().getFullYear();
   </script>
 </body>
+
 </html>

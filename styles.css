@@ -373,7 +373,7 @@ footer a:hover {
 
 /* Responsive: su schermi piccoli disponi i campi in colonna, dimensioni adeguate */
 @media (max-width: 800px) {
-
+  
   .nome-group,
   .importo-group,
   .tipo-group,
@@ -386,7 +386,7 @@ footer a:hover {
   }
 
   .description {
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     /* Ancora più piccolo su mobile */
   }
 
