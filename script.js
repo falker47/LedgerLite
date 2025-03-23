@@ -5,6 +5,7 @@ let transactions = [];
 const localStorageKey = 'debitiCreditiTransactions';
 
 // Suggerimenti fissi per la descrizione (già esistenti + nuove categorie)
+// Suggerimenti fissi per la descrizione (già esistenti + nuove categorie)
 const descriptionSuggestionsData = [
   { text: "Spesa", icon: "<i class='fa-solid fa-cart-shopping'></i>" },
   { text: "Cena", icon: "<i class='fa-solid fa-utensils'></i>" },
@@ -17,7 +18,9 @@ const descriptionSuggestionsData = [
   { text: "Prestito", icon: "<i class='fa-solid fa-hand-holding-dollar'></i>" },
   { text: "Dividi conto", icon: "<i class='fa-solid fa-user-friends'></i>" },
   { text: "Benzina", icon: "<i class='fa-solid fa-gas-pump'></i>" },
-  { text: "Shopping", icon: "<i class='fa-solid fa-shopping-bag'></i>" }
+  { text: "Shopping", icon: "<i class='fa-solid fa-shopping-bag'></i>" },
+  { text: "Taxi", icon: "<i class='fa-solid fa-taxi'></i>" },
+  { text: "Treno", icon: "<i class='fa-solid fa-train'></i>" }
 ];
 
 // Mappatura delle icone per le descrizioni
@@ -33,8 +36,11 @@ const descriptionIcons = {
   "prestito": "<i class='fa-solid fa-hand-holding-dollar'></i>",
   "dividi conto": "<i class='fa-solid fa-user-friends'></i>",
   "benzina": "<i class='fa-solid fa-gas-pump'></i>",
-  "shopping": "<i class='fa-solid fa-shopping-bag'></i>"
+  "shopping": "<i class='fa-solid fa-shopping-bag'></i>",
+  "taxi": "<i class='fa-solid fa-taxi'></i>",
+  "treno": "<i class='fa-solid fa-train'></i>"
 };
+
 
 
 // Elementi del DOM per la modalità Direct (S1)
