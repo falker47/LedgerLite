@@ -4,14 +4,20 @@
 let transactions = [];
 const localStorageKey = 'debitiCreditiTransactions';
 
-// Suggerimenti fissi per la descrizione (già esistenti)
+// Suggerimenti fissi per la descrizione (già esistenti + nuove categorie)
 const descriptionSuggestionsData = [
   { text: "Spesa", icon: "<i class='fa-solid fa-cart-shopping'></i>" },
   { text: "Cena", icon: "<i class='fa-solid fa-utensils'></i>" },
   { text: "Pranzo", icon: "<i class='fa-solid fa-utensils'></i>" },
   { text: "Viaggio", icon: "<i class='fa-solid fa-plane'></i>" },
   { text: "Regalo", icon: "<i class='fa-solid fa-gift'></i>" },
-  { text: "Ripetizioni", icon: "<i class='fa-solid fa-graduation-cap'></i>" }
+  { text: "Ripetizioni", icon: "<i class='fa-solid fa-graduation-cap'></i>" },
+  { text: "Affitto", icon: "<i class='fa-solid fa-house'></i>" },
+  { text: "Bollette", icon: "<i class='fa-solid fa-file-invoice-dollar'></i>" },
+  { text: "Prestito", icon: "<i class='fa-solid fa-hand-holding-dollar'></i>" },
+  { text: "Dividi conto", icon: "<i class='fa-solid fa-user-friends'></i>" },
+  { text: "Benzina", icon: "<i class='fa-solid fa-gas-pump'></i>" },
+  { text: "Shopping", icon: "<i class='fa-solid fa-shopping-bag'></i>" }
 ];
 
 // Mappatura delle icone per le descrizioni
@@ -21,8 +27,15 @@ const descriptionIcons = {
   "pranzo": "<i class='fa-solid fa-utensils'></i>",
   "viaggio": "<i class='fa-solid fa-plane'></i>",
   "regalo": "<i class='fa-solid fa-gift'></i>",
-  "ripetizioni": "<i class='fa-solid fa-graduation-cap'></i>"
+  "ripetizioni": "<i class='fa-solid fa-graduation-cap'></i>",
+  "affitto": "<i class='fa-solid fa-house'></i>",
+  "bollette": "<i class='fa-solid fa-file-invoice-dollar'></i>",
+  "prestito": "<i class='fa-solid fa-hand-holding-dollar'></i>",
+  "dividi conto": "<i class='fa-solid fa-user-friends'></i>",
+  "benzina": "<i class='fa-solid fa-gas-pump'></i>",
+  "shopping": "<i class='fa-solid fa-shopping-bag'></i>"
 };
+
 
 // Elementi del DOM per la modalità Direct (S1)
 const form = document.getElementById('transaction-form');
