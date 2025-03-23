@@ -41,6 +41,8 @@ const oreInput = document.getElementById('ore');
 const descrizioneHourlyInput = document.getElementById('descrizione-hourly');
 const toggleTypeHourlyCheckbox = document.getElementById('toggle-type-hourly');
 const toggleTextHourly = document.getElementById('toggle-text-hourly');
+const nomeSuggestionsHourlyDiv = document.getElementById('nome-suggestions-hourly');
+const descrizioneSuggestionsHourlyDiv = document.getElementById('descrizione-suggestions-hourly');
 
 // Contenitori delle due modalità
 const directModeContainer = document.getElementById('direct-mode');
@@ -557,5 +559,75 @@ descrizioneSuggestionsDiv.addEventListener('mousedown', function (e) {
 descrizioneInput.addEventListener('blur', function () {
   setTimeout(() => {
     descrizioneSuggestionsDiv.style.display = 'none';
+  }, 200);
+});
+
+// Suggerimenti per il campo Nome (modalità Hourly)
+nomeHourlyInput.addEventListener('input', function () {
+  const query = nomeHourlyInput.value.trim().toLowerCase();
+  if (query.length < 2) {
+    nomeSuggestionsHourlyDiv.style.display = 'none';
+    return;
+  }
+  const suggestions = new Set();
+  transactions.forEach(tx => {
+    if (!tx.settled && tx.nome.toLowerCase().includes(query)) {
+      suggestions.add(tx.nome);
+    }
+  });
+  nomeSuggestionsHourlyDiv.innerHTML = '';
+  if (suggestions.size > 0) {
+    suggestions.forEach(sugg => {
+      const div = document.createElement('div');
+      div.classList.add('suggestion');
+      div.textContent = sugg;
+      div.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+        nomeHourlyInput.value = sugg;
+        nomeSuggestionsHourlyDiv.style.display = 'none';
+        nomeHourlyInput.focus();
+      });
+      nomeSuggestionsHourlyDiv.appendChild(div);
+    });
+    nomeSuggestionsHourlyDiv.style.display = 'block';
+  } else {
+    nomeSuggestionsHourlyDiv.style.display = 'none';
+  }
+});
+nomeSuggestionsHourlyDiv.addEventListener('mousedown', (e) => {
+  e.preventDefault();
+});
+
+// Suggerimenti per il campo Descrizione (modalità Hourly)
+descrizioneHourlyInput.addEventListener('input', function () {
+  const query = descrizioneHourlyInput.value.trim().toLowerCase();
+  const filtered = descriptionSuggestionsData.filter(item =>
+    item.text.toLowerCase().startsWith(query)
+  );
+  descrizioneSuggestionsHourlyDiv.innerHTML = '';
+  if (filtered.length > 0) {
+    filtered.forEach(item => {
+      const div = document.createElement('div');
+      div.classList.add('suggestion');
+      div.innerHTML = `${item.icon} ${item.text}`;
+      div.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+        descrizioneHourlyInput.value = item.text;
+        descrizioneSuggestionsHourlyDiv.style.display = 'none';
+        descrizioneHourlyInput.focus();
+      });
+      descrizioneSuggestionsHourlyDiv.appendChild(div);
+    });
+    descrizioneSuggestionsHourlyDiv.style.display = 'block';
+  } else {
+    descrizioneSuggestionsHourlyDiv.style.display = 'none';
+  }
+});
+descrizioneSuggestionsHourlyDiv.addEventListener('mousedown', function (e) {
+  e.preventDefault();
+});
+descrizioneHourlyInput.addEventListener('blur', function () {
+  setTimeout(() => {
+    descrizioneSuggestionsHourlyDiv.style.display = 'none';
   }, 200);
 });
