@@ -199,6 +199,14 @@ label {
   transition: color 0.3s ease;
 }
 
+#toggle-text-hourly{
+  font-weight: bold;
+  color: #4CAF50;
+  /* Verde per Credito di default */
+  transition: color 0.3s ease;
+}
+
+
 /* Suggerimenti (dropdown) */
 .suggestions {
   position: absolute;
