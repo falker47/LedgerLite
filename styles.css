@@ -199,7 +199,7 @@ label {
   transition: color 0.3s ease;
 }
 
-#toggle-text-hourly{
+#toggle-text-hourly {
   font-weight: bold;
   color: #4CAF50;
   /* Verde per Credito di default */
@@ -381,7 +381,7 @@ footer a:hover {
 
 /* Responsive: su schermi piccoli disponi i campi in colonna, dimensioni adeguate */
 @media (max-width: 800px) {
-  
+
   .nome-group,
   .importo-group,
   .tipo-group,
@@ -422,6 +422,24 @@ footer a:hover {
     /* dimensione testo nei campi */
     padding: 5px;
   }
+
+  input::placeholder {
+    font-size: 0.8em;
+  }
+
+  input::-webkit-input-placeholder {
+    font-size: 0.8em;
+  }
+  input:-moz-placeholder {
+    font-size: 0.8em;
+  }
+  input::-moz-placeholder {
+    font-size: 0.8em;
+  }
+  input:-ms-input-placeholder {
+    font-size: 0.8em;
+  }
+  
 }
 
 /* Tab switch styles */
@@ -461,7 +479,8 @@ footer a:hover {
 
 .tab-content.active {
   opacity: 1;
-  max-height: 1000px; /* Sufficiente per mostrare il contenuto */
+  max-height: 1000px;
+  /* Sufficiente per mostrare il contenuto */
   pointer-events: all;
 }
 
