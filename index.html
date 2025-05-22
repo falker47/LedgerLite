@@ -35,6 +35,14 @@
         Basta inserire nome, se è un credito/debito e l'importo!<br>
         Non cancellare la cache del browser se non vuoi perdere i dati salvati!
       </p>
+      <div class="auth-buttons">
+        <button id="login-google" class="auth-button">
+          <i class="fab fa-google"></i> Accedi con Google
+        </button>
+        <button id="logout-button" class="auth-button" style="display: none;">
+          <i class="fas fa-sign-out-alt"></i> Esci
+        </button>
+      </div>
     </header>
 
     <!-- Main Content -->
@@ -165,11 +173,22 @@
     </p>
   </footer>
 
-  <script src="script.js"></script>
   <script>
     // Imposta l'anno corrente nel footer
     document.getElementById("currentYear").textContent = new Date().getFullYear();
   </script>
+  
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Firebase App (la core library di Firebase) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <!-- Firebase Firestore -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <!-- Firebase Auth -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+  <script src="script.js"></script>
 </body>
 
 </html>

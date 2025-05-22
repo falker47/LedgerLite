@@ -1,10 +1,17 @@
 // script.js
 
-// Array globale delle transazioni e chiave per il localStorage
+// Array globale delle transazioni
 let transactions = [];
 const localStorageKey = 'debitiCreditiTransactions';
 
-// Suggerimenti fissi per la descrizione (già esistenti + nuove categorie)
+// Configurazione Supabase (dovrai sostituire con i tuoi dati)
+const supabaseUrl = 'https://eayjkdiycrqgsqbcrkgb.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVheWprZGl5Y3JxZ3NxYmNya2diIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5MTU5NDYsImV4cCI6MjA2MzQ5MTk0Nn0.V5_7LncFUiCIq-nBIhGVSDG9VKbfFzPjPAR2e1a9xxM'; // Inserisci qui la tua chiave API completa
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+// Stato dell'autenticazione
+let currentUser = null;
+
 // Suggerimenti fissi per la descrizione (già esistenti + nuove categorie)
 const descriptionSuggestionsData = [
   { text: "Spesa", icon: "<i class='fa-solid fa-cart-shopping'></i>" },
@@ -79,21 +86,154 @@ const historyList = document.getElementById('history-list');
 let activeMode = "direct";
 
 // Carica le transazioni dal localStorage
-function loadTransactions() {
-  const data = localStorage.getItem(localStorageKey);
-  if (data) {
-    transactions = JSON.parse(data);
+async function loadTransactions() {
+  if (!currentUser) {
+    // Se non c'è un utente autenticato, carica dal localStorage come fallback
+    const data = localStorage.getItem(localStorageKey);
+    if (data) {
+      transactions = JSON.parse(data);
+    }
+    return;
+  }
+  
+  try {
+    const { data, error } = await supabaseClient
+      .from('transactions')
+      .select('*')
+      .eq('user_id', currentUser.id);
+    
+    if (error) throw error;
+    
+    transactions = data || [];
+    
+    // Salva anche in localStorage come backup
+    localStorage.setItem(localStorageKey, JSON.stringify(transactions));
+  } catch (error) {
+    console.error("Errore nel caricamento delle transazioni:", error);
+    // Fallback a localStorage
+    const data = localStorage.getItem(localStorageKey);
+    if (data) {
+      transactions = JSON.parse(data);
+    }
   }
 }
 
-// Salva le transazioni nel localStorage
-function saveTransactions() {
+// Salva le transazioni nel database
+async function saveTransactions() {
+  // Salva sempre in localStorage come backup
   localStorage.setItem(localStorageKey, JSON.stringify(transactions));
+  
+  if (!currentUser) return;
+  
+  try {
+    // Prima elimina tutte le transazioni dell'utente
+    const { error: deleteError } = await supabaseClient
+      .from('transactions')
+      .delete()
+      .eq('user_id', currentUser.id);
+    
+    if (deleteError) throw deleteError;
+    
+    // Poi aggiungi tutte le transazioni aggiornate
+    if (transactions.length > 0) {
+      const { error: insertError } = await supabaseClient
+        .from('transactions')
+        .insert(transactions.map(tx => ({
+          ...tx,
+          user_id: currentUser.id
+        })));
+      
+      if (insertError) throw insertError;
+    }
+  } catch (error) {
+    console.error("Errore nel salvataggio delle transazioni:", error);
+  }
 }
 
-// Inizializzazione
-loadTransactions();
-renderAll();
+// Funzione per l'autenticazione con Google
+async function signInWithGoogle() {
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider: 'google'
+    });
+    
+    if (error) throw error;
+    
+    // L'utente verrà reindirizzato a Google per l'autenticazione
+  } catch (error) {
+    console.error("Errore nell'autenticazione:", error);
+  }
+}
+
+// Funzione per il logout
+async function signOut() {
+  try {
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) throw error;
+    
+    currentUser = null;
+    // Carica i dati dal localStorage
+    await loadTransactions();
+    renderAll();
+    
+    // Aggiorna UI
+    document.getElementById('login-google').style.display = 'block';
+    document.getElementById('logout-button').style.display = 'none';
+  } catch (error) {
+    console.error("Errore durante il logout:", error);
+  }
+}
+
+// Listener per lo stato dell'autenticazione
+supabaseClient.auth.onAuthStateChange(async (event, session) => {
+  if (session) {
+    currentUser = session.user;
+    console.log("Utente autenticato:", currentUser.id);
+    
+    // Aggiorna UI
+    document.getElementById('login-google').style.display = 'none';
+    document.getElementById('logout-button').style.display = 'block';
+    
+    await loadTransactions();
+    renderAll();
+  } else {
+    console.log("Utente non autenticato");
+    currentUser = null;
+    
+    // Aggiorna UI
+    document.getElementById('login-google').style.display = 'block';
+    document.getElementById('logout-button').style.display = 'none';
+    
+    // Carica i dati dal localStorage
+    await loadTransactions();
+    renderAll();
+  }
+});
+
+// Elimina una singola transazione
+async function deleteTransaction(id) {
+  transactions = transactions.filter(tx => tx.id !== id);
+  await saveTransactions();
+  renderAll();
+}
+
+// Elimina tutte le transazioni (non saldate) di un gruppo (per nome e tipo)
+async function deleteGroupTransactions(nome, type) {
+  transactions = transactions.filter(tx => {
+    if (!tx.settled && tx.nome === nome && tx.type === type) {
+      return false;
+    }
+    return true;
+  });
+  await saveTransactions();
+  renderAll();
+}
+
+// Funzione per ripristinare il pulsante trash allo stato originale
+function revertTrashButton(button) {
+  button.classList.remove('confirm-delete');
+  button.innerHTML = `<i class="fa-solid fa-trash"></i>`;
+}
 
 // Gestione del toggle per la modalità Direct
 toggleTypeCheckbox.addEventListener('change', function () {
@@ -175,7 +315,7 @@ function parseOre(value) {
 }
 
 // Gestione submit del form
-form.addEventListener('submit', function (e) {
+form.addEventListener('submit', async function (e) {
   e.preventDefault();
   let transaction = null;
   if (activeMode === "direct") {
@@ -230,7 +370,7 @@ form.addEventListener('submit', function (e) {
     };
   }
   transactions.push(transaction);
-  saveTransactions();
+  await saveTransactions();
   renderAll();
   form.reset();
   // Reset dei toggle
@@ -421,14 +561,14 @@ function toggleDetail(li, txList) {
 }
 
 // Segna una transazione come saldata
-function markAsSettled(id) {
+async function markAsSettled(id) {
   transactions = transactions.map(tx => {
     if (tx.id === id) {
       tx.settled = true;
     }
     return tx;
   });
-  saveTransactions();
+  await saveTransactions();
   renderAll();
 }
 
@@ -485,21 +625,21 @@ function renderHistory() {
 }
 
 // Elimina una singola transazione
-function deleteTransaction(id) {
+async function deleteTransaction(id) {
   transactions = transactions.filter(tx => tx.id !== id);
-  saveTransactions();
+  await saveTransactions();
   renderAll();
 }
 
 // Elimina tutte le transazioni (non saldate) di un gruppo (per nome e tipo)
-function deleteGroupTransactions(nome, type) {
+async function deleteGroupTransactions(nome, type) {
   transactions = transactions.filter(tx => {
     if (!tx.settled && tx.nome === nome && tx.type === type) {
       return false;
     }
     return true;
   });
-  saveTransactions();
+  await saveTransactions();
   renderAll();
 }
 
@@ -649,4 +789,14 @@ descrizioneHourlyInput.addEventListener('blur', function () {
   setTimeout(() => {
     descrizioneSuggestionsHourlyDiv.style.display = 'none';
   }, 200);
+});
+
+// Aggiungi event listener per i pulsanti di autenticazione
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('login-google').addEventListener('click', signInWithGoogle);
+  document.getElementById('logout-button').addEventListener('click', signOut);
+  
+  // Inizializzazione
+  loadTransactions();
+  renderAll();
 });

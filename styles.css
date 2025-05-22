@@ -488,3 +488,40 @@ footer a:hover {
 #hourly-mode .form-row {
   align-items: center;
 }
+
+/* Stili per i pulsanti di autenticazione */
+.auth-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.auth-button {
+  background-color: #4285F4;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s;
+}
+
+.auth-button:hover {
+  background-color: #357ae8;
+}
+
+.auth-button i {
+  font-size: 16px;
+}
+
+#logout-button {
+  background-color: #757575;
+}
+
+#logout-button:hover {
+  background-color: #616161;
+}
