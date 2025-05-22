@@ -85,7 +85,7 @@ const historyList = document.getElementById('history-list');
 // Modalità attiva ("direct" o "hourly")
 let activeMode = "direct";
 
-// Carica le transazioni dal localStorage
+// Carica le transazioni dal database
 async function loadTransactions() {
   if (!currentUser) {
     // Se non c'è un utente autenticato, carica dal localStorage come fallback
@@ -97,13 +97,18 @@ async function loadTransactions() {
   }
   
   try {
+    console.log("Caricamento dati da Supabase per l'utente:", currentUser.id);
     const { data, error } = await supabaseClient
       .from('transactions')
       .select('*')
       .eq('user_id', currentUser.id);
     
-    if (error) throw error;
+    if (error) {
+      console.error("Errore nel caricamento delle transazioni:", error);
+      throw error;
+    }
     
+    console.log("Dati ricevuti da Supabase:", data);
     transactions = data || [];
     
     // Salva anche in localStorage come backup
@@ -126,16 +131,22 @@ async function saveTransactions() {
   if (!currentUser) return;
   
   try {
+    console.log("Salvataggio dati su Supabase per l'utente:", currentUser.id);
+    
     // Prima elimina tutte le transazioni dell'utente
     const { error: deleteError } = await supabaseClient
       .from('transactions')
       .delete()
       .eq('user_id', currentUser.id);
     
-    if (deleteError) throw deleteError;
+    if (deleteError) {
+      console.error("Errore nell'eliminazione delle transazioni:", deleteError);
+      throw deleteError;
+    }
     
     // Poi aggiungi tutte le transazioni aggiornate
     if (transactions.length > 0) {
+      console.log("Inserimento di", transactions.length, "transazioni");
       const { error: insertError } = await supabaseClient
         .from('transactions')
         .insert(transactions.map(tx => ({
@@ -143,10 +154,16 @@ async function saveTransactions() {
           user_id: currentUser.id
         })));
       
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error("Errore nell'inserimento delle transazioni:", insertError);
+        throw insertError;
+      }
     }
+    
+    console.log("Salvataggio completato con successo");
   } catch (error) {
     console.error("Errore nel salvataggio delle transazioni:", error);
+    alert("Si è verificato un errore durante il salvataggio. I tuoi dati sono stati salvati localmente.");
   }
 }
 
@@ -189,6 +206,10 @@ async function signOut() {
 
 // Listener per lo stato dell'autenticazione
 supabaseClient.auth.onAuthStateChange(async (event, session) => {
+  // Aggiungi questo dopo la dichiarazione delle altre costanti
+  const syncButton = document.getElementById('sync-button');
+  
+  // Aggiungi questo alla funzione onAuthStateChange
   if (session) {
     currentUser = session.user;
     console.log("Utente autenticato:", currentUser.id);
@@ -802,4 +823,18 @@ document.addEventListener('DOMContentLoaded', function() {
   // Inizializzazione
   loadTransactions();
   renderAll();
+});
+
+// Aggiungi questo evento per la sincronizzazione manuale
+syncButton.addEventListener('click', async function() {
+  if (currentUser) {
+    try {
+      await loadTransactions();
+      renderAll();
+      alert('Sincronizzazione completata!');
+    } catch (error) {
+      console.error('Errore durante la sincronizzazione:', error);
+      alert('Errore durante la sincronizzazione. Controlla la console per i dettagli.');
+    }
+  }
 });
