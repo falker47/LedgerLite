@@ -154,7 +154,10 @@ async function saveTransactions() {
 async function signInWithGoogle() {
   try {
     const { data, error } = await supabaseClient.auth.signInWithOAuth({
-      provider: 'google'
+      provider: 'google',
+      options: {
+        redirectTo: 'https://falker47.github.io/LedgerLite/'
+      }
     });
     
     if (error) throw error;
