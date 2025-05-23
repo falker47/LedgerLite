@@ -132,44 +132,27 @@ async function saveTransactions() {
   
   try {
     console.log("Salvataggio dati su Supabase per l'utente:", currentUser.id);
-    console.log("Transazioni da salvare:", transactions);
     
-    // Elimina e reinserisci direttamente senza merge aggiuntivo
-    const { error: deleteError } = await supabaseClient
+    // Usa upsert invece di delete + insert
+    const transactionsToUpsert = transactions.map(tx => ({
+      ...tx,
+      user_id: currentUser.id
+    }));
+    
+    const { error } = await supabaseClient
       .from('transactions')
-      .delete()
-      .eq('user_id', currentUser.id);
+      .upsert(transactionsToUpsert, { onConflict: 'id' });
     
-    if (deleteError) {
-      console.error("Errore specifico nell'eliminazione:", deleteError);
-      throw deleteError;
-    }
-    
-    if (transactions.length > 0) {
-      const transactionsToInsert = transactions.map(tx => ({
-        ...tx,
-        user_id: currentUser.id
-      }));
-      
-      console.log("Dati da inserire:", transactionsToInsert);
-      
-      const { error: insertError } = await supabaseClient
-        .from('transactions')
-        .insert(transactionsToInsert);
-      
-      if (insertError) {
-        console.error("Errore specifico nell'inserimento:", insertError);
-        throw insertError;
-      }
+    if (error) {
+      console.error("Errore nel salvataggio delle transazioni:", error);
+      throw error;
     }
     
     console.log("Salvataggio completato con successo");
   } catch (error) {
-    console.error("Errore dettagliato nel salvataggio delle transazioni:", error);
-    console.error("Codice errore:", error.code);
-    console.error("Messaggio errore:", error.message);
-    console.error("Dettagli errore:", error.details);
-    alert(`Si è verificato un errore durante il salvataggio: ${error.message}. I tuoi dati sono stati salvati localmente.`);
+    console.error("Errore nel salvataggio delle transazioni:", error);
+    // Non mostrare l'alert all'utente per ogni errore di salvataggio
+    // ma registra l'errore nella console
   }
 }
 
@@ -213,18 +196,25 @@ async function signInWithGoogle() {
 async function signOut() {
   try {
     const { error } = await supabaseClient.auth.signOut();
-    if (error) throw error;
+    if (error) {
+      console.error("Errore durante il logout:", error);
+      alert("Errore durante il logout: " + error.message);
+      return;
+    }
     
     currentUser = null;
-    // Carica i dati dal localStorage
-    await loadTransactions();
-    renderAll();
     
     // Aggiorna UI
     document.getElementById('login-google').style.display = 'block';
     document.getElementById('logout-button').style.display = 'none';
+    document.getElementById('sync-button').style.display = 'none';
+    
+    // Carica i dati dal localStorage
+    await loadTransactions();
+    renderAll();
   } catch (error) {
     console.error("Errore durante il logout:", error);
+    alert("Errore durante il logout: " + error.message);
   }
 }
 
@@ -234,79 +224,111 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
   const syncButton = document.getElementById('sync-button');
   
   // Funzione di sincronizzazione manuale
-  async function manualSync() {
-    if (!currentUser) {
-      alert("Devi essere autenticato per sincronizzare i dati.");
-      return;
+async function manualSync() {
+  if (!currentUser) {
+    alert("Devi essere autenticato per sincronizzare i dati.");
+    return;
+  }
+  
+  try {
+    syncButton.disabled = true;
+    syncButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizzazione...';
+    
+    // Carica i dati dal server
+    const { data: serverData, error: loadError } = await supabaseClient
+      .from('transactions')
+      .select('*')
+      .eq('user_id', currentUser.id);
+    
+    if (loadError) {
+      console.error("Errore nel caricamento delle transazioni:", loadError);
+      throw loadError;
     }
     
-    try {
-      syncButton.disabled = true;
-      syncButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizzazione...';
-      
-      // Carica i dati dal server
-      const { data: serverData, error: loadError } = await supabaseClient
-        .from('transactions')
-        .select('*')
-        .eq('user_id', currentUser.id);
-      
-      if (loadError) throw loadError;
-      
-      // Merge con i dati locali
-      const serverTransactions = serverData || [];
-      const localTransactions = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
-      const mergedTransactions = mergeTransactions(localTransactions, serverTransactions);
-      
-      // Aggiorna sia locale che server
-      transactions = mergedTransactions;
-      localStorage.setItem(localStorageKey, JSON.stringify(transactions));
-      
-      // Salva sul server solo se necessario
-      if (mergedTransactions.length !== serverTransactions.length || 
-          JSON.stringify(mergedTransactions) !== JSON.stringify(serverTransactions)) {
-        
-        const { error: deleteError } = await supabaseClient
-          .from('transactions')
-          .delete()
-          .eq('user_id', currentUser.id);
-        
-        if (deleteError) throw deleteError;
-        
-        if (mergedTransactions.length > 0) {
-          const { error: insertError } = await supabaseClient
-            .from('transactions')
-            .insert(mergedTransactions.map(tx => ({
-              ...tx,
-              user_id: currentUser.id
-            })));
-          
-          if (insertError) throw insertError;
-        }
-      }
-      
-      renderAll();
-      alert("Sincronizzazione completata!");
-      
-    } catch (error) {
-      console.error("Errore durante la sincronizzazione:", error);
-      alert("Errore durante la sincronizzazione. Riprova più tardi.");
-    } finally {
-      syncButton.disabled = false;
-      syncButton.innerHTML = '<i class="fas fa-sync"></i> Sincronizza';
+    // Merge con i dati locali
+    const serverTransactions = serverData || [];
+    const localTransactions = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
+    
+    // Usa una strategia di merge più robusta
+    const mergedTransactions = mergeTransactionsImproved(localTransactions, serverTransactions);
+    
+    // Aggiorna locale
+    transactions = mergedTransactions;
+    localStorage.setItem(localStorageKey, JSON.stringify(transactions));
+    
+    // Aggiorna il server con i dati uniti
+    const { error: upsertError } = await supabaseClient
+      .from('transactions')
+      .upsert(
+        mergedTransactions.map(tx => ({
+          ...tx,
+          user_id: currentUser.id
+        })),
+        { onConflict: 'id' }
+      );
+    
+    if (upsertError) {
+      console.error("Errore nell'aggiornamento delle transazioni:", upsertError);
+      throw upsertError;
     }
+    
+    renderAll();
+    alert("Sincronizzazione completata!");
+    
+  } catch (error) {
+    console.error("Errore durante la sincronizzazione:", error);
+    alert("Errore durante la sincronizzazione: " + error.message);
+  } finally {
+    syncButton.disabled = false;
+    syncButton.innerHTML = '<i class="fas fa-sync"></i> Sincronizza';
   }
+}
+
+// Funzione di merge migliorata
+function mergeTransactionsImproved(localTx, serverTx) {
+  const merged = new Map();
+  
+  // Aggiungi tutte le transazioni del server
+  serverTx.forEach(tx => merged.set(tx.id, tx));
+  
+  // Aggiungi/sovrascrivi con le transazioni locali più recenti
+  localTx.forEach(tx => {
+    const existing = merged.get(tx.id);
+    // Se non esiste sul server o la versione locale è più recente
+    if (!existing || new Date(tx.timestamp) > new Date(existing.timestamp)) {
+      merged.set(tx.id, tx);
+    }
+  });
+  
+  return Array.from(merged.values());
+}
+
+// Funzione di merge migliorata
+function mergeTransactionsImproved(localTx, serverTx) {
+  const merged = new Map();
+  
+  // Aggiungi tutte le transazioni del server
+  serverTx.forEach(tx => merged.set(tx.id, tx));
+  
+  // Aggiungi/sovrascrivi con le transazioni locali più recenti
+  localTx.forEach(tx => {
+    const existing = merged.get(tx.id);
+    // Se non esiste sul server o la versione locale è più recente
+    if (!existing || new Date(tx.timestamp) > new Date(existing.timestamp)) {
+      merged.set(tx.id, tx);
+    }
+  });
+  
+  return Array.from(merged.values());
+}
   
   // Aggiungi l'event listener per il pulsante sync
   syncButton.addEventListener('click', manualSync);
   if (session) {
     currentUser = session.user;
-    console.log("Utente autenticato:", currentUser.id);
-    
-    // Aggiorna UI
     document.getElementById('login-google').style.display = 'none';
     document.getElementById('logout-button').style.display = 'block';
-    syncButton.style.display = 'block'; // ✅ Mostra il pulsante sync
-    
+    document.getElementById('sync-button').style.display = 'block';
     await loadTransactions();
     renderAll();
   } else {
@@ -316,9 +338,8 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
     // Aggiorna UI
     document.getElementById('login-google').style.display = 'block';
     document.getElementById('logout-button').style.display = 'none';
-    syncButton.style.display = 'none'; // ✅ Nascondi il pulsante sync
-    
-    await loadTransactions();
+    document.getElementById('sync-button').style.display = 'none';
+    await loadTransactions(); // Carica i dati locali
     renderAll();
   }
 });
@@ -327,7 +348,25 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
 async function deleteTransaction(id) {
   transactions = transactions.filter(tx => tx.id !== id);
   await saveTransactions();
-  renderAll(); // ✅ Già presente
+  
+  // Se l'utente è autenticato, elimina anche dal server
+  if (currentUser) {
+    try {
+      const { error } = await supabaseClient
+        .from('transactions')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', currentUser.id);
+      
+      if (error) {
+        console.error("Errore nell'eliminazione della transazione:", error);
+      }
+    } catch (error) {
+      console.error("Errore nell'eliminazione della transazione:", error);
+    }
+  }
+  
+  renderAll();
 }
 
 async function markAsSettled(id) {
@@ -569,7 +608,7 @@ function renderAggregatedLists() {
     if (group.transactions.length === 1 && group.transactions[0].descrizione) {
       descHTML = ` - <em>${group.transactions[0].descrizione}</em>`;
     }
-    // Bottone per segnare come saldato e pulsante trash per eliminare
+    // Bottone per segnare come saldate
     const settleBtnHTML = `<button class="action-btn settle-btn" title="Segna tutte come saldate"><i class="fa-solid fa-check"></i></button>`;
     const trashBtnHTML = `<button class="action-btn trash-btn" title="Elimina"><i class="fa-solid fa-trash"></i></button>`;
     li.innerHTML = `
@@ -757,7 +796,25 @@ function renderHistory() {
 async function deleteTransaction(id) {
   transactions = transactions.filter(tx => tx.id !== id);
   await saveTransactions();
-  renderAll(); // ✅ Già presente
+  
+  // Se l'utente è autenticato, elimina anche dal server
+  if (currentUser) {
+    try {
+      const { error } = await supabaseClient
+        .from('transactions')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', currentUser.id);
+      
+      if (error) {
+        console.error("Errore nell'eliminazione della transazione:", error);
+      }
+    } catch (error) {
+      console.error("Errore nell'eliminazione della transazione:", error);
+    }
+  }
+  
+  renderAll();
 }
 
 async function markAsSettled(id) {
@@ -782,7 +839,7 @@ async function deleteGroupTransactions(nome, type) {
   renderAll(); // ✅ Già presente
 }
 
-// Ripristina lo stato iniziale del pulsante trash
+// Funzione per ripristinare il pulsante trash allo stato originale
 function revertTrashButton(button) {
   button.classList.remove('confirm-delete');
   button.innerHTML = `<i class="fa-solid fa-trash"></i>`;
