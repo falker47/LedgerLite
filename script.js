@@ -133,19 +133,7 @@ async function saveTransactions() {
   try {
     console.log("Salvataggio dati su Supabase per l'utente:", currentUser.id);
     
-    // Carica i dati attuali dal server
-    const { data: serverData, error: loadError } = await supabaseClient
-      .from('transactions')
-      .select('*')
-      .eq('user_id', currentUser.id);
-    
-    if (loadError) throw loadError;
-    
-    // Merge intelligente: mantieni le transazioni più recenti
-    const serverTransactions = serverData || [];
-    const mergedTransactions = mergeTransactions(transactions, serverTransactions);
-    
-    // Elimina e reinserisci solo se necessario
+    // Elimina e reinserisci direttamente senza merge aggiuntivo
     const { error: deleteError } = await supabaseClient
       .from('transactions')
       .delete()
@@ -153,19 +141,16 @@ async function saveTransactions() {
     
     if (deleteError) throw deleteError;
     
-    if (mergedTransactions.length > 0) {
+    if (transactions.length > 0) {
       const { error: insertError } = await supabaseClient
         .from('transactions')
-        .insert(mergedTransactions.map(tx => ({
+        .insert(transactions.map(tx => ({
           ...tx,
           user_id: currentUser.id
         })));
       
       if (insertError) throw insertError;
     }
-    
-    // Aggiorna l'array locale con i dati merged
-    transactions = mergedTransactions;
     
     console.log("Salvataggio completato con successo");
   } catch (error) {
@@ -245,11 +230,49 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
       syncButton.disabled = true;
       syncButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizzazione...';
       
-      await loadTransactions();
-      await saveTransactions();
-      renderAll();
+      // Carica i dati dal server
+      const { data: serverData, error: loadError } = await supabaseClient
+        .from('transactions')
+        .select('*')
+        .eq('user_id', currentUser.id);
       
+      if (loadError) throw loadError;
+      
+      // Merge con i dati locali
+      const serverTransactions = serverData || [];
+      const localTransactions = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
+      const mergedTransactions = mergeTransactions(localTransactions, serverTransactions);
+      
+      // Aggiorna sia locale che server
+      transactions = mergedTransactions;
+      localStorage.setItem(localStorageKey, JSON.stringify(transactions));
+      
+      // Salva sul server solo se necessario
+      if (mergedTransactions.length !== serverTransactions.length || 
+          JSON.stringify(mergedTransactions) !== JSON.stringify(serverTransactions)) {
+        
+        const { error: deleteError } = await supabaseClient
+          .from('transactions')
+          .delete()
+          .eq('user_id', currentUser.id);
+        
+        if (deleteError) throw deleteError;
+        
+        if (mergedTransactions.length > 0) {
+          const { error: insertError } = await supabaseClient
+            .from('transactions')
+            .insert(mergedTransactions.map(tx => ({
+              ...tx,
+              user_id: currentUser.id
+            })));
+          
+          if (insertError) throw insertError;
+        }
+      }
+      
+      renderAll();
       alert("Sincronizzazione completata!");
+      
     } catch (error) {
       console.error("Errore durante la sincronizzazione:", error);
       alert("Errore durante la sincronizzazione. Riprova più tardi.");
@@ -290,10 +313,20 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
 async function deleteTransaction(id) {
   transactions = transactions.filter(tx => tx.id !== id);
   await saveTransactions();
-  renderAll();
+  renderAll(); // ✅ Già presente
 }
 
-// Elimina tutte le transazioni (non saldate) di un gruppo (per nome e tipo)
+async function markAsSettled(id) {
+  transactions = transactions.map(tx => {
+    if (tx.id === id) {
+      tx.settled = true;
+    }
+    return tx;
+  });
+  await saveTransactions();
+  renderAll(); // ✅ Già presente
+}
+
 async function deleteGroupTransactions(nome, type) {
   transactions = transactions.filter(tx => {
     if (!tx.settled && tx.nome === nome && tx.type === type) {
@@ -302,7 +335,7 @@ async function deleteGroupTransactions(nome, type) {
     return true;
   });
   await saveTransactions();
-  renderAll();
+  renderAll(); // ✅ Già presente
 }
 
 // Funzione per ripristinare il pulsante trash allo stato originale
@@ -710,10 +743,20 @@ function renderHistory() {
 async function deleteTransaction(id) {
   transactions = transactions.filter(tx => tx.id !== id);
   await saveTransactions();
-  renderAll();
+  renderAll(); // ✅ Già presente
 }
 
-// Elimina tutte le transazioni (non saldate) di un gruppo (per nome e tipo)
+async function markAsSettled(id) {
+  transactions = transactions.map(tx => {
+    if (tx.id === id) {
+      tx.settled = true;
+    }
+    return tx;
+  });
+  await saveTransactions();
+  renderAll(); // ✅ Già presente
+}
+
 async function deleteGroupTransactions(nome, type) {
   transactions = transactions.filter(tx => {
     if (!tx.settled && tx.nome === nome && tx.type === type) {
@@ -722,7 +765,7 @@ async function deleteGroupTransactions(nome, type) {
     return true;
   });
   await saveTransactions();
-  renderAll();
+  renderAll(); // ✅ Già presente
 }
 
 // Ripristina lo stato iniziale del pulsante trash
