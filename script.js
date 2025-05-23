@@ -132,6 +132,7 @@ async function saveTransactions() {
   
   try {
     console.log("Salvataggio dati su Supabase per l'utente:", currentUser.id);
+    console.log("Transazioni da salvare:", transactions);
     
     // Elimina e reinserisci direttamente senza merge aggiuntivo
     const { error: deleteError } = await supabaseClient
@@ -139,23 +140,36 @@ async function saveTransactions() {
       .delete()
       .eq('user_id', currentUser.id);
     
-    if (deleteError) throw deleteError;
+    if (deleteError) {
+      console.error("Errore specifico nell'eliminazione:", deleteError);
+      throw deleteError;
+    }
     
     if (transactions.length > 0) {
+      const transactionsToInsert = transactions.map(tx => ({
+        ...tx,
+        user_id: currentUser.id
+      }));
+      
+      console.log("Dati da inserire:", transactionsToInsert);
+      
       const { error: insertError } = await supabaseClient
         .from('transactions')
-        .insert(transactions.map(tx => ({
-          ...tx,
-          user_id: currentUser.id
-        })));
+        .insert(transactionsToInsert);
       
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error("Errore specifico nell'inserimento:", insertError);
+        throw insertError;
+      }
     }
     
     console.log("Salvataggio completato con successo");
   } catch (error) {
-    console.error("Errore nel salvataggio delle transazioni:", error);
-    alert("Si è verificato un errore durante il salvataggio. I tuoi dati sono stati salvati localmente.");
+    console.error("Errore dettagliato nel salvataggio delle transazioni:", error);
+    console.error("Codice errore:", error.code);
+    console.error("Messaggio errore:", error.message);
+    console.error("Dettagli errore:", error.details);
+    alert(`Si è verificato un errore durante il salvataggio: ${error.message}. I tuoi dati sono stati salvati localmente.`);
   }
 }
 
@@ -449,9 +463,9 @@ form.addEventListener('submit', async function (e) {
       return Date.now() + '-' + Math.random().toString(36).substr(2, 9);
     }
     
-    // Nel form submit:
+    // Nel form submit per la modalità Hourly:
     transaction = {
-      id: generateUniqueId(), // ✅ ID unico garantito
+      id: generateUniqueId(), // ✅ Cambia da Date.now() a generateUniqueId()
       nome,
       importo,
       descrizione,
