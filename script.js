@@ -133,38 +133,63 @@ async function saveTransactions() {
   try {
     console.log("Salvataggio dati su Supabase per l'utente:", currentUser.id);
     
-    // Prima elimina tutte le transazioni dell'utente
+    // Carica i dati attuali dal server
+    const { data: serverData, error: loadError } = await supabaseClient
+      .from('transactions')
+      .select('*')
+      .eq('user_id', currentUser.id);
+    
+    if (loadError) throw loadError;
+    
+    // Merge intelligente: mantieni le transazioni più recenti
+    const serverTransactions = serverData || [];
+    const mergedTransactions = mergeTransactions(transactions, serverTransactions);
+    
+    // Elimina e reinserisci solo se necessario
     const { error: deleteError } = await supabaseClient
       .from('transactions')
       .delete()
       .eq('user_id', currentUser.id);
     
-    if (deleteError) {
-      console.error("Errore nell'eliminazione delle transazioni:", deleteError);
-      throw deleteError;
-    }
+    if (deleteError) throw deleteError;
     
-    // Poi aggiungi tutte le transazioni aggiornate
-    if (transactions.length > 0) {
-      console.log("Inserimento di", transactions.length, "transazioni");
+    if (mergedTransactions.length > 0) {
       const { error: insertError } = await supabaseClient
         .from('transactions')
-        .insert(transactions.map(tx => ({
+        .insert(mergedTransactions.map(tx => ({
           ...tx,
           user_id: currentUser.id
         })));
       
-      if (insertError) {
-        console.error("Errore nell'inserimento delle transazioni:", insertError);
-        throw insertError;
-      }
+      if (insertError) throw insertError;
     }
+    
+    // Aggiorna l'array locale con i dati merged
+    transactions = mergedTransactions;
     
     console.log("Salvataggio completato con successo");
   } catch (error) {
     console.error("Errore nel salvataggio delle transazioni:", error);
     alert("Si è verificato un errore durante il salvataggio. I tuoi dati sono stati salvati localmente.");
   }
+}
+
+// Funzione per fare il merge delle transazioni
+function mergeTransactions(localTx, serverTx) {
+  const merged = new Map();
+  
+  // Aggiungi tutte le transazioni del server
+  serverTx.forEach(tx => merged.set(tx.id, tx));
+  
+  // Aggiungi/sovrascrivi con le transazioni locali (più recenti)
+  localTx.forEach(tx => {
+    const existing = merged.get(tx.id);
+    if (!existing || new Date(tx.timestamp) >= new Date(existing.timestamp)) {
+      merged.set(tx.id, tx);
+    }
+  });
+  
+  return Array.from(merged.values());
 }
 
 // Funzione per l'autenticazione con Google
@@ -209,7 +234,33 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
   // Aggiungi questo dopo la dichiarazione delle altre costanti
   const syncButton = document.getElementById('sync-button');
   
-  // Aggiungi questo alla funzione onAuthStateChange
+  // Funzione di sincronizzazione manuale
+  async function manualSync() {
+    if (!currentUser) {
+      alert("Devi essere autenticato per sincronizzare i dati.");
+      return;
+    }
+    
+    try {
+      syncButton.disabled = true;
+      syncButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizzazione...';
+      
+      await loadTransactions();
+      await saveTransactions();
+      renderAll();
+      
+      alert("Sincronizzazione completata!");
+    } catch (error) {
+      console.error("Errore durante la sincronizzazione:", error);
+      alert("Errore durante la sincronizzazione. Riprova più tardi.");
+    } finally {
+      syncButton.disabled = false;
+      syncButton.innerHTML = '<i class="fas fa-sync"></i> Sincronizza';
+    }
+  }
+  
+  // Aggiungi l'event listener per il pulsante sync
+  syncButton.addEventListener('click', manualSync);
   if (session) {
     currentUser = session.user;
     console.log("Utente autenticato:", currentUser.id);
@@ -217,6 +268,7 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
     // Aggiorna UI
     document.getElementById('login-google').style.display = 'none';
     document.getElementById('logout-button').style.display = 'block';
+    syncButton.style.display = 'block'; // ✅ Mostra il pulsante sync
     
     await loadTransactions();
     renderAll();
@@ -227,8 +279,8 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
     // Aggiorna UI
     document.getElementById('login-google').style.display = 'block';
     document.getElementById('logout-button').style.display = 'none';
+    syncButton.style.display = 'none'; // ✅ Nascondi il pulsante sync
     
-    // Carica i dati dal localStorage
     await loadTransactions();
     renderAll();
   }
@@ -359,8 +411,14 @@ form.addEventListener('submit', async function (e) {
     }
     const descrizione = descrizioneInput.value.trim();
     const type = importo >= 0 ? "Credito" : "Debito";
+    // Sostituire Date.now() con una funzione che genera ID unici
+    function generateUniqueId() {
+      return Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    }
+    
+    // Nel form submit:
     transaction = {
-      id: Date.now(),
+      id: generateUniqueId(), // ✅ ID unico garantito
       nome,
       importo,
       descrizione,
