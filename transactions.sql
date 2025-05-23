@@ -1,10 +1,10 @@
 CREATE TABLE transactions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL,
+  id TEXT PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id),
   nome TEXT NOT NULL,
-  importo NUMERIC NOT NULL,
+  importo DECIMAL NOT NULL,
   descrizione TEXT,
   type TEXT NOT NULL,
-  settled BOOLEAN DEFAULT false,
-  timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  settled BOOLEAN DEFAULT FALSE,
+  timestamp TIMESTAMPTZ DEFAULT NOW()
 );
