@@ -538,8 +538,9 @@ form.addEventListener('submit', async function (e) {
     };
   }
   transactions.push(transaction);
+  renderAll(); // Refresh immediato prima del salvataggio
   await saveTransactions();
-  renderAll();
+  renderAll(); // Refresh dopo il salvataggio (già presente)
   form.reset();
   // Reset dei toggle
   toggleTypeCheckbox.checked = false;
