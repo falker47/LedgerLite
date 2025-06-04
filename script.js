@@ -559,25 +559,96 @@ function renderAll() {
   renderHistory();
 }
 
-// Raggruppa le transazioni attive per nominativo e tipo
-function getAggregatedActive() {
-  const aggregated = {};
+// Raggruppa le transazioni attive per nominativo con compensazione automatica
+function getAggregatedActiveWithCompensation() {
+  const byPerson = {};
+  
+  // Prima raggruppa tutte le transazioni per persona
   transactions.forEach(tx => {
     if (!tx.settled) {
-      const key = tx.nome + '|' + tx.type;
-      if (!aggregated[key]) {
-        aggregated[key] = {
-          nome: tx.nome,
-          type: tx.type,
-          total: 0,
-          transactions: []
+      if (!byPerson[tx.nome]) {
+        byPerson[tx.nome] = {
+          crediti: [],
+          debiti: [],
+          totalCrediti: 0,
+          totalDebiti: 0
         };
       }
-      aggregated[key].total += tx.importo;
-      aggregated[key].transactions.push(tx);
+      
+      if (tx.importo >= 0) {
+        byPerson[tx.nome].crediti.push(tx);
+        byPerson[tx.nome].totalCrediti += tx.importo;
+      } else {
+        byPerson[tx.nome].debiti.push(tx);
+        byPerson[tx.nome].totalDebiti += Math.abs(tx.importo);
+      }
     }
   });
-  return aggregated;
+  
+  const result = {};
+  
+  // Calcola il saldo netto per ogni persona
+  for (let nome in byPerson) {
+    const person = byPerson[nome];
+    const saldoNetto = person.totalCrediti - person.totalDebiti;
+    
+    if (Math.abs(saldoNetto) < 0.01) {
+      // Saldo praticamente zero, non mostrare nulla
+      continue;
+    }
+    
+    let key, type, total, transactions, descrizione;
+    
+    if (saldoNetto > 0) {
+      // Credito netto
+      key = nome + '|Credito';
+      type = 'Credito';
+      total = saldoNetto;
+      transactions = [...person.crediti, ...person.debiti];
+      
+      if (person.totalDebiti > 0) {
+        // C'è stata compensazione
+        const creditiDesc = person.crediti.map(tx => tx.descrizione).filter(d => d).join(', ');
+        const debitiDesc = person.debiti.map(tx => tx.descrizione).filter(d => d).join(', ');
+        descrizione = `Residuo credito (${creditiDesc || 'varie'} - ${debitiDesc || 'varie'})`;
+      } else {
+        // Solo crediti
+        descrizione = person.crediti.length === 1 ? person.crediti[0].descrizione : null;
+      }
+    } else {
+      // Debito netto
+      key = nome + '|Debito';
+      type = 'Debito';
+      total = saldoNetto; // Già negativo
+      transactions = [...person.crediti, ...person.debiti];
+      
+      if (person.totalCrediti > 0) {
+        // C'è stata compensazione
+        const creditiDesc = person.crediti.map(tx => tx.descrizione).filter(d => d).join(', ');
+        const debitiDesc = person.debiti.map(tx => tx.descrizione).filter(d => d).join(', ');
+        descrizione = `Residuo debito (${debitiDesc || 'varie'} - ${creditiDesc || 'varie'})`;
+      } else {
+        // Solo debiti
+        descrizione = person.debiti.length === 1 ? person.debiti[0].descrizione : null;
+      }
+    }
+    
+    result[key] = {
+      nome,
+      type,
+      total,
+      transactions,
+      descrizione,
+      isCompensated: (person.totalCrediti > 0 && person.totalDebiti > 0)
+    };
+  }
+  
+  return result;
+}
+
+// Funzione originale per compatibilità (se serve)
+function getAggregatedActive() {
+  return getAggregatedActiveWithCompensation();
 }
 
 // Restituisce l'icona in base alla descrizione
@@ -592,28 +663,38 @@ function getIconForDescription(text) {
   return "";
 }
 
-// Renderizza le liste aggregate per crediti e debiti includendo i pulsanti per segnare e cancellare
+// Renderizza le liste aggregate con compensazione
 function renderAggregatedLists() {
   creditiList.innerHTML = '';
   debitiList.innerHTML = '';
-  const aggregated = getAggregatedActive();
+  const aggregated = getAggregatedActiveWithCompensation();
+  
   for (let key in aggregated) {
     const group = aggregated[key];
     const li = document.createElement('li');
+    
     let iconHTML = "";
-    if (group.transactions.length > 1) {
+    if (group.isCompensated) {
+      // Icona speciale per transazioni compensate
+      iconHTML = `<i class="fa-solid fa-scale-balanced compensation-icon" title="Saldo compensato"></i>`;
+    } else if (group.transactions.length > 1) {
       iconHTML = `<i class="fa-solid fa-circle-plus multiple-icon"></i>`;
     } else {
       const singleTx = group.transactions[0];
       iconHTML = getIconForDescription(singleTx.descrizione);
     }
+    
     let descHTML = "";
-    if (group.transactions.length === 1 && group.transactions[0].descrizione) {
+    if (group.descrizione) {
+      descHTML = ` - <em>${group.descrizione}</em>`;
+    } else if (group.transactions.length === 1 && group.transactions[0].descrizione) {
       descHTML = ` - <em>${group.transactions[0].descrizione}</em>`;
     }
-    // Bottone per segnare come saldate
+    
+    // Bottoni per azioni
     const settleBtnHTML = `<button class="action-btn settle-btn" title="Segna tutte come saldate"><i class="fa-solid fa-check"></i></button>`;
     const trashBtnHTML = `<button class="action-btn trash-btn" title="Elimina"><i class="fa-solid fa-trash"></i></button>`;
+    
     li.innerHTML = `
       <div>
         <span class="icon-span">${iconHTML}</span>
@@ -622,48 +703,53 @@ function renderAggregatedLists() {
       <div class="button-group">
         ${settleBtnHTML}
         ${trashBtnHTML}
-        <span class="amount">${group.total.toFixed(2)}€</span>
+        <span class="amount">${Math.abs(group.total).toFixed(2)}€</span>
       </div>
     `;
-    // Evento per il bottone settle
+    
+    // Eventi per i bottoni
     li.querySelector('.settle-btn').addEventListener('click', (e) => {
       e.stopPropagation();
       group.transactions.forEach(tx => markAsSettled(tx.id));
     });
-    // Evento per il pulsante trash (eliminazione del gruppo)
+    
     const groupTrashBtn = li.querySelector('.trash-btn');
-
     groupTrashBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  if (!groupTrashBtn.classList.contains('confirm-delete')) {
-    groupTrashBtn.classList.add('confirm-delete');
-    // Imposta solo l'icona iniziale
-    groupTrashBtn.innerHTML = `<i class="fa-solid fa-trash"></i>`;
-    // Crea dinamicamente lo span "Conferma"
-    const confSpan = document.createElement('span');
-    confSpan.className = "confirmation-text";
-    confSpan.textContent = "Conferma";
-    groupTrashBtn.appendChild(confSpan);
-    // Aggiungi la classe 'show' dopo un breve ritardo per attivare la transizione
-    setTimeout(() => {
-      confSpan.classList.add('show');
-    }, 10);
-  } else {
-    deleteGroupTransactions(group.nome, group.type);
-  }
-});
-
+      e.stopPropagation();
+      if (!groupTrashBtn.classList.contains('confirm-delete')) {
+        groupTrashBtn.classList.add('confirm-delete');
+        groupTrashBtn.innerHTML = `<i class="fa-solid fa-trash"></i>`;
+        const confSpan = document.createElement('span');
+        confSpan.className = "confirmation-text";
+        confSpan.textContent = "Conferma";
+        groupTrashBtn.appendChild(confSpan);
+        setTimeout(() => {
+          confSpan.classList.add('show');
+        }, 10);
+      } else {
+        // Elimina tutte le transazioni del gruppo
+        group.transactions.forEach(tx => {
+          transactions = transactions.filter(t => t.id !== tx.id);
+        });
+        saveTransactions();
+        renderAll();
+      }
+    });
+    
     groupTrashBtn.addEventListener('mouseleave', function() {
       if (groupTrashBtn.classList.contains('confirm-delete')) {
         revertTrashButton(groupTrashBtn);
       }
     });
+    
     if (group.transactions.length > 1) {
       li.addEventListener('click', function (e) {
         if (e.target.closest('.action-btn')) return;
         toggleDetail(li, group.transactions);
       });
     }
+    
+    // Aggiungi alla lista appropriata
     if (group.type === "Credito") {
       creditiList.appendChild(li);
     } else {

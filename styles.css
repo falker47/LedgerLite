@@ -525,3 +525,26 @@ footer a:hover {
 #logout-button:hover {
   background-color: #616161;
 }
+
+/* Stili per le transazioni compensate */
+.compensation-icon {
+  color: #ff9800 !important;
+  animation: balance 2s ease-in-out infinite;
+}
+
+.compensation-badge {
+  font-size: 0.8em;
+  margin-left: 5px;
+  opacity: 0.8;
+}
+
+@keyframes balance {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+/* Evidenzia le righe compensate */
+li:has(.compensation-icon) {
+  background: linear-gradient(90deg, rgba(255, 152, 0, 0.1) 0%, transparent 100%);
+  border-left: 3px solid #ff9800;
+}
