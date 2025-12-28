@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>LedgerLite</title>
+  <!-- Google Fonts: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Favicons -->
+  <link href="https://i.postimg.cc/rmCxjswj/main-falker-logo-gecko-transparent-minimal.png" rel="icon">
+  <link href="https://i.postimg.cc/rmCxjswj/main-falker-logo-gecko-transparent-minimal.png" rel="apple-touch-icon">
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="LedgerLite">
+  <meta property="og:description" content="Gestisci in modo semplice i tuoi debiti e crediti con LedgerLite">
+  <meta property="og:image" content="https://falker47.github.io/LedgerLite/ledgerlite.webp">
+  <meta property="og:url" content="https://falker47.github.io/LedgerLite/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="LedgerLite">
+  <meta name="twitter:description" content="Gestisci in modo semplice i tuoi debiti e crediti con LedgerLite">
+  <meta name="twitter:image" content="https://falker47.github.io/LedgerLite/ledgerlite.webp">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Foglio di stile -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="content-container">
+    <header>
+      <h1>LedgerLite</h1>
+      <p class="description">
+        LedgerLite ti permette di gestire in modo semplice i tuoi crediti e debiti.<br>
+        Basta inserire nome, se è un credito/debito e l'importo!<br>
+        Non cancellare la cache del browser se non vuoi perdere i dati salvati!
+      </p>
+      <div class="auth-buttons">
+        <button id="login-google" class="auth-button">
+          <i class="fab fa-google"></i> Accedi con Google
+        </button>
+        <button id="logout-button" class="auth-button" style="display: none;">
+          <i class="fas fa-sign-out-alt"></i> Esci
+        </button>
+        <button id="sync-button" class="auth-button" style="display: none;">
+          <i class="fas fa-sync"></i> Sincronizza
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+      <!-- Tab Switch -->
+      <div class="tab-switch">
+        <button type="button" class="tab active" data-mode="direct">Importo Diretto</button>
+        <button type="button" class="tab" data-mode="hourly">Tariffa Oraria</button>
+      </div>
+
+      <!-- Sezione Form -->
+      <section class="form-section">
+        <form id="transaction-form">
+          <!-- Modalità Direct (S1) -->
+          <div id="direct-mode" class="tab-content active">
+            <!-- Riga 1: Nome e toggle sulla stessa riga -->
+            <div class="form-row">
+              <div class="form-group nome-group" style="flex: 0 0 40%;">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" name="nome" autocomplete="on">
+                <div id="nome-suggestions" class="suggestions"></div>
+              </div>
+              <div class="form-group tipo-group" style="flex: 0 0 40%;">
+                <label for="toggle-type">Tipo:</label>
+                <div class="toggle-wrapper">
+                  <div class="toggle-switch">
+                    <input type="checkbox" id="toggle-type" class="toggle-checkbox">
+                    <label for="toggle-type" class="toggle-label">
+                      <span class="toggle-inner"></span>
+                      <span class="toggle-switch-button"></span>
+                    </label>
+                  </div>
+                  <span id="toggle-text">Credito</span>
+                </div>
+              </div>
+            </div>
+            <!-- Riga 2: Importo e toggle -->
+            <div class="form-row">
+              <div class="form-group importo-group" style="flex: 0 0 40%;">
+                <label for="importo">Importo:</label>
+                <input type="number" id="importo" name="importo" step="0.01" required>
+              </div>
+            </div>
+            <!-- Riga 3: Descrizione opzionale -->
+            <div class="form-row">
+              <div class="form-group descrizione-group">
+                <label for="descrizione">Descrizione (opzionale):</label>
+                <input type="text" id="descrizione" name="descrizione" autocomplete="on">
+                <div id="descrizione-suggestions" class="suggestions"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modalità Hourly (S2) -->
+          <div id="hourly-mode" class="tab-content">
+            <!-- Riga 1: Nome e toggle sulla stessa riga -->
+            <div class="form-row">
+              <div class="form-group nome-group" style="flex: 0 0 40%;">
+                <label for="nome-hourly">Nome:</label>
+                <input type="text" id="nome-hourly" name="nome-hourly" autocomplete="on">
+                <div id="nome-suggestions-hourly" class="suggestions"></div>
+              </div>
+              <div class="form-group tipo-group" style="flex: 0 0 40%;">
+                <label for="toggle-type-hourly">Tipo:</label>
+                <div class="toggle-wrapper">
+                  <div class="toggle-switch">
+                    <input type="checkbox" id="toggle-type-hourly" class="toggle-checkbox">
+                    <label for="toggle-type-hourly" class="toggle-label">
+                      <span class="toggle-inner"></span>
+                      <span class="toggle-switch-button"></span>
+                    </label>
+                  </div>
+                  <span id="toggle-text-hourly">Credito</span>
+                </div>
+              </div>
+            </div>
+            <!-- Riga 2: Tariffa Oraria e Ore -->
+            <div class="form-row">
+              <div class="form-group importo-group" style="flex: 0 0 40%;">
+                <label for="tariffa">Tariffa Oraria:</label>
+                <input type="number" id="tariffa" name="tariffa" step="0.01">
+              </div>
+              <div class="form-group importo-group" style="flex: 0 0 40%;">
+                <label for="ore">Tempo:</label>
+                <input type="text" id="ore" name="ore" placeholder="h (1:30) o min (90)">
+              </div>
+            </div>
+            <!-- Riga 3: Descrizione opzionale -->
+            <div class="form-row">
+              <div class="form-group descrizione-group">
+                <label for="descrizione-hourly">Descrizione (opzionale):</label>
+                <input type="text" id="descrizione-hourly" name="descrizione-hourly" autocomplete="on">
+                <div id="descrizione-suggestions-hourly" class="suggestions"></div>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" id="add-transaction">Aggiungi Transazione</button>
+        </form>
+      </section>
+
+      <!-- Sezione delle liste: Crediti e Debiti -->
+      <section class="lists-section">
+        <div class="list-container crediti-container">
+          <h2>Crediti</h2>
+          <ul id="crediti-list" class="transaction-list"></ul>
+        </div>
+        <div class="list-container debiti-container">
+          <h2>Debiti</h2>
+          <ul id="debiti-list" class="transaction-list"></ul>
+        </div>
+      </section>
+
+      <!-- Sezione Storico -->
+      <section class="history-section">
+        <h2>Storico Transazioni Saldate</h2>
+        <ul id="history-list" class="transaction-list"></ul>
+      </section>
+    </main>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>
+      <a href="https://falker47.github.io/Nexus-portfolio/" target="_blank">
+        &copy; <span id="currentYear"></span> Maurizio Falconi - falker47
+      </a>
+    </p>
+  </footer>
+
+  <script>
+    // Imposta l'anno corrente nel footer
+    document.getElementById("currentYear").textContent = new Date().getFullYear();
+  </script>
+  
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Firebase App (la core library di Firebase) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <!-- Firebase Firestore -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <!-- Firebase Auth -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

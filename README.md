@@ -1,74 +1,38 @@
 # LedgerLite 💰
 
-Un'applicazione web semplice e intuitiva per gestire crediti e debiti personali con sincronizzazione cloud.
+A simple, robust web app to track personal credits and debts, synced via Firebase.
 
-## 🚀 Caratteristiche
+## Setup Instructions
 
-- **Gestione Crediti/Debiti**: Traccia facilmente chi ti deve soldi e a chi devi
-- **Due modalità di inserimento**:
-  - **Modalità Diretta**: Inserimento rapido di importi fissi
-  - **Modalità Oraria**: Calcolo automatico basato su tariffa oraria
-- **Sincronizzazione Cloud**: Accedi ai tuoi dati da qualsiasi dispositivo con Google
-- **Suggerimenti Intelligenti**: Icone e suggerimenti per descrizioni comuni
-- **Storico Completo**: Visualizza tutte le transazioni concluse
-- **Interfaccia Responsive**: Funziona perfettamente su desktop e mobile
+### 1. Firebase Configuration
 
-## 🛠️ Tecnologie Utilizzate
+1.  Go to the [Firebase Console](https://console.firebase.google.com/).
+2.  Create a new project.
+3.  **Authentication**: Enable **Google** provider.
+4.  **Firestore**: Create a database (start in **production mode** or **test mode**).
+5.  **Project Settings**:
+    - Register a Web App.
+    - Copy the `firebaseConfig` object properties.
+    - Open `js/firebaseConfig.js` in this project.
+    - Replace the placeholder values (`YOUR_API_KEY`, etc.) with your actual keys.
 
-- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
-- **Backend**: Supabase (Database PostgreSQL + Autenticazione)
-- **Autenticazione**: Google OAuth tramite Supabase
-- **Hosting**: GitHub Pages
-- **Icone**: Font Awesome 6
-- **Font**: Google Fonts (Poppins)
+### 2. Security Rules
 
-## 📱 Come Usare
+1.  In Firebase Console > Firestore > Rules.
+2.  Copy the content of the `firestore.rules` file from this project.
+3.  Paste it into the console and publish.
 
-### Inserimento Transazioni
+### 3. Run Locally
 
-1. **Modalità Diretta**:
-   - Inserisci nome, importo e descrizione
-   - Usa il toggle per scegliere tra Credito/Debito
-   - Clicca "Aggiungi Transazione"
+Since this project uses ES Modules, you need a local server (you cannot just open `index.html` file directly).
 
-2. **Modalità Oraria**:
-   - Inserisci nome, tariffa oraria e ore lavorate
-   - Il sistema calcolerà automaticamente l'importo
-   - Supporta formati come "2.5", "2:30", "2h 30m"
+- **VS Code**: Install "Live Server" extension, right-click `index.html` -> "Open with Live Server".
+- **Python**: Run `python -m http.server` in the project root and open `http://localhost:8000`.
 
-### Gestione Transazioni
+## Features
 
-- **✅ Segna come Saldata**: Sposta la transazione nello storico
-- **🗑️ Elimina**: Rimuove definitivamente la transazione
-- **🔄 Sincronizza**: Forza la sincronizzazione con il cloud
-
-### Autenticazione
-
-- **Accedi con Google**: Sincronizza i dati tra dispositivi
-- **Modalità Offline**: Funziona anche senza account (solo localStorage)
-
-## 🎨 Suggerimenti Disponibili
-
-L'app include suggerimenti predefiniti con icone:
-
-- 🛒 Spesa
-- 🍽️ Cena/Pranzo
-- 🍕 Pizza
-- ✈️ Viaggio
-- 🎁 Regalo
-- 🎓 Ripetizioni
-- 🏠 Affitto
-- 📄 Bollette
-- 💰 Prestito
-- 👥 Dividi conto
-- ⛽ Benzina
-- 🛍️ Shopping
-- 🚕 Taxi
-- 🚂 Treno
-
-## 🔧 Installazione Locale
-
-1. Clona il repository:
-   ```bash
-   git clone https://github.com/falker47/LedgerLite.git
-   cd LedgerLite
+- **Google Login**: Secure authentication.
+- **Real-time Dashboard**: Instant updates for Total Credit/Debt and Net Balance.
+- **Entry Management**: Add, Edit, Delete, and Toggle Status (Open/Closed).
+- **Filtering**: Search by name/description, filter by type or status.
+- **Responsive Design**: Premium UI that works on mobile and desktop.

@@ -1,198 +1,204 @@
 <!DOCTYPE html>
-<html lang="it">
-
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta charset="UTF-8">
-  <title>LedgerLite</title>
-  <!-- Google Fonts: Poppins -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <!-- Favicons -->
-  <link href="https://i.postimg.cc/rmCxjswj/main-falker-logo-gecko-transparent-minimal.png" rel="icon">
-  <link href="https://i.postimg.cc/rmCxjswj/main-falker-logo-gecko-transparent-minimal.png" rel="apple-touch-icon">
-  <!-- Open Graph Meta Tags -->
-  <meta property="og:title" content="LedgerLite">
-  <meta property="og:description" content="Gestisci in modo semplice i tuoi debiti e crediti con LedgerLite">
-  <meta property="og:image" content="https://falker47.github.io/LedgerLite/ledgerlite.webp">
-  <meta property="og:url" content="https://falker47.github.io/LedgerLite/">
-  <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="LedgerLite">
-  <meta name="twitter:description" content="Gestisci in modo semplice i tuoi debiti e crediti con LedgerLite">
-  <meta name="twitter:image" content="https://falker47.github.io/LedgerLite/ledgerlite.webp">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <!-- Foglio di stile -->
-  <link rel="stylesheet" href="styles.css">
-</head>
-
-<body>
-  <div class="content-container">
-    <header>
-      <h1>LedgerLite</h1>
-      <p class="description">
-        LedgerLite ti permette di gestire in modo semplice i tuoi crediti e debiti.<br>
-        Basta inserire nome, se è un credito/debito e l'importo!<br>
-        Non cancellare la cache del browser se non vuoi perdere i dati salvati!
-      </p>
-      <div class="auth-buttons">
-        <button id="login-google" class="auth-button">
-          <i class="fab fa-google"></i> Accedi con Google
-        </button>
-        <button id="logout-button" class="auth-button" style="display: none;">
-          <i class="fas fa-sign-out-alt"></i> Esci
-        </button>
-        <button id="sync-button" class="auth-button" style="display: none;">
-          <i class="fas fa-sync"></i> Sincronizza
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LedgerLite</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" src="js/app.js" defer></script>
+  </head>
+  <body>
+    <!-- Auth Section -->
+    <div id="auth-section" class="auth-container">
+      <div class="auth-card">
+        <h1 class="logo">LedgerLite</h1>
+        <p class="subtitle">Track your shared expenses with ease.</p>
+        <button id="login-btn" class="btn btn-primary btn-google">
+          <svg viewBox="0 0 24 24" class="google-icon">
+            <path
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              fill="#4285F4"
+            />
+            <path
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              fill="#34A853"
+            />
+            <path
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.26-.19-.58z"
+              fill="#FBBC05"
+            />
+            <path
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              fill="#EA4335"
+            />
+          </svg>
+          Continue with Google
         </button>
       </div>
-    </header>
+    </div>
 
-    <!-- Main Content -->
-    <main>
-      <!-- Tab Switch -->
-      <div class="tab-switch">
-        <button type="button" class="tab active" data-mode="direct">Importo Diretto</button>
-        <button type="button" class="tab" data-mode="hourly">Tariffa Oraria</button>
-      </div>
+    <!-- App Section (Hidden by default) -->
+    <div id="app-section" class="app-container hidden">
+      <!-- Navigation -->
+      <nav class="navbar">
+        <div class="nav-brand">LedgerLite</div>
+        <div class="nav-user">
+          <img id="user-avatar" src="" alt="User" class="avatar" />
+          <span id="user-name"></span>
+          <button id="logout-btn" class="btn btn-text">Logout</button>
+        </div>
+      </nav>
 
-      <!-- Sezione Form -->
-      <section class="form-section">
-        <form id="transaction-form">
-          <!-- Modalità Direct (S1) -->
-          <div id="direct-mode" class="tab-content active">
-            <!-- Riga 1: Nome e toggle sulla stessa riga -->
-            <div class="form-row">
-              <div class="form-group nome-group" style="flex: 0 0 40%;">
-                <label for="nome">Nome:</label>
-                <input type="text" id="nome" name="nome" autocomplete="on">
-                <div id="nome-suggestions" class="suggestions"></div>
-              </div>
-              <div class="form-group tipo-group" style="flex: 0 0 40%;">
-                <label for="toggle-type">Tipo:</label>
-                <div class="toggle-wrapper">
-                  <div class="toggle-switch">
-                    <input type="checkbox" id="toggle-type" class="toggle-checkbox">
-                    <label for="toggle-type" class="toggle-label">
-                      <span class="toggle-inner"></span>
-                      <span class="toggle-switch-button"></span>
-                    </label>
-                  </div>
-                  <span id="toggle-text">Credito</span>
-                </div>
-              </div>
-            </div>
-            <!-- Riga 2: Importo e toggle -->
-            <div class="form-row">
-              <div class="form-group importo-group" style="flex: 0 0 40%;">
-                <label for="importo">Importo:</label>
-                <input type="number" id="importo" name="importo" step="0.01" required>
-              </div>
-            </div>
-            <!-- Riga 3: Descrizione opzionale -->
-            <div class="form-row">
-              <div class="form-group descrizione-group">
-                <label for="descrizione">Descrizione (opzionale):</label>
-                <input type="text" id="descrizione" name="descrizione" autocomplete="on">
-                <div id="descrizione-suggestions" class="suggestions"></div>
-              </div>
+      <!-- Main Content -->
+      <main class="dashboard">
+        <!-- Summary Cards -->
+        <div class="summary-grid">
+          <div class="card summary-card credit">
+            <h3>Total Credit</h3>
+            <p class="amount" id="total-credit">€0.00</p>
+          </div>
+          <div class="card summary-card debt">
+            <h3>Total Debt</h3>
+            <p class="amount" id="total-debt">€0.00</p>
+          </div>
+          <div class="card summary-card net">
+            <h3>Net Balance</h3>
+            <p class="amount" id="net-balance">€0.00</p>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-bar">
+          <div class="search-filter">
+            <input
+              type="text"
+              id="search-input"
+              placeholder="Search entries..."
+              class="input-field"
+            />
+            <select id="filter-type" class="select-field">
+              <option value="all">All Types</option>
+              <option value="credit">Credits</option>
+              <option value="debt">Debts</option>
+            </select>
+            <select id="filter-status" class="select-field">
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+              <option value="all">All Status</option>
+            </select>
+          </div>
+          <button id="add-entry-btn" class="btn btn-primary">
+            + Add Entry
+          </button>
+        </div>
+
+        <!-- Entries List -->
+        <div class="entries-container">
+          <table class="entries-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Counterparty</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="entries-list">
+              <!-- Entries will be injected here -->
+            </tbody>
+          </table>
+          <div id="loading-indicator" class="loading hidden">Loading...</div>
+          <div id="empty-state" class="empty-state hidden">
+            No entries found.
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Entry Modal -->
+    <div id="entry-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Add Entry</h2>
+          <button id="close-modal-btn" class="close-btn">&times;</button>
+        </div>
+        <form id="entry-form">
+          <input type="hidden" id="entry-id" />
+
+          <div class="form-group">
+            <label>Type</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" name="entry-type" value="credit" checked />
+                <span class="radio-btn credit">Credit (They owe me)</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="entry-type" value="debt" />
+                <span class="radio-btn debt">Debt (I owe them)</span>
+              </label>
             </div>
           </div>
 
-          <!-- Modalità Hourly (S2) -->
-          <div id="hourly-mode" class="tab-content">
-            <!-- Riga 1: Nome e toggle sulla stessa riga -->
-            <div class="form-row">
-              <div class="form-group nome-group" style="flex: 0 0 40%;">
-                <label for="nome-hourly">Nome:</label>
-                <input type="text" id="nome-hourly" name="nome-hourly" autocomplete="on">
-                <div id="nome-suggestions-hourly" class="suggestions"></div>
-              </div>
-              <div class="form-group tipo-group" style="flex: 0 0 40%;">
-                <label for="toggle-type-hourly">Tipo:</label>
-                <div class="toggle-wrapper">
-                  <div class="toggle-switch">
-                    <input type="checkbox" id="toggle-type-hourly" class="toggle-checkbox">
-                    <label for="toggle-type-hourly" class="toggle-label">
-                      <span class="toggle-inner"></span>
-                      <span class="toggle-switch-button"></span>
-                    </label>
-                  </div>
-                  <span id="toggle-text-hourly">Credito</span>
-                </div>
-              </div>
-            </div>
-            <!-- Riga 2: Tariffa Oraria e Ore -->
-            <div class="form-row">
-              <div class="form-group importo-group" style="flex: 0 0 40%;">
-                <label for="tariffa">Tariffa Oraria:</label>
-                <input type="number" id="tariffa" name="tariffa" step="0.01">
-              </div>
-              <div class="form-group importo-group" style="flex: 0 0 40%;">
-                <label for="ore">Tempo:</label>
-                <input type="text" id="ore" name="ore" placeholder="h (1:30) o min (90)">
-              </div>
-            </div>
-            <!-- Riga 3: Descrizione opzionale -->
-            <div class="form-row">
-              <div class="form-group descrizione-group">
-                <label for="descrizione-hourly">Descrizione (opzionale):</label>
-                <input type="text" id="descrizione-hourly" name="descrizione-hourly" autocomplete="on">
-                <div id="descrizione-suggestions-hourly" class="suggestions"></div>
-              </div>
-            </div>
+          <div class="form-group">
+            <label for="counterparty">Counterparty Name</label>
+            <input
+              type="text"
+              id="counterparty"
+              required
+              class="input-field"
+              placeholder="e.g. Manuel"
+            />
           </div>
 
-          <button type="submit" id="add-transaction">Aggiungi Transazione</button>
+          <div class="form-group">
+            <label for="amount">Amount (€)</label>
+            <input
+              type="number"
+              id="amount"
+              step="0.01"
+              min="0.01"
+              required
+              class="input-field"
+              placeholder="0.00"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="description">Description (Optional)</label>
+            <input
+              type="text"
+              id="description"
+              class="input-field"
+              placeholder="Dinner, Rent, etc."
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="due-date">Due Date (Optional)</label>
+            <input type="date" id="due-date" class="input-field" />
+          </div>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              id="cancel-modal-btn"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">Save Entry</button>
+          </div>
         </form>
-      </section>
-
-      <!-- Sezione delle liste: Crediti e Debiti -->
-      <section class="lists-section">
-        <div class="list-container crediti-container">
-          <h2>Crediti</h2>
-          <ul id="crediti-list" class="transaction-list"></ul>
-        </div>
-        <div class="list-container debiti-container">
-          <h2>Debiti</h2>
-          <ul id="debiti-list" class="transaction-list"></ul>
-        </div>
-      </section>
-
-      <!-- Sezione Storico -->
-      <section class="history-section">
-        <h2>Storico Transazioni Saldate</h2>
-        <ul id="history-list" class="transaction-list"></ul>
-      </section>
-    </main>
-  </div>
-
-  <!-- FOOTER -->
-  <footer>
-    <p>
-      <a href="https://falker47.github.io/Nexus-portfolio/" target="_blank">
-        &copy; <span id="currentYear"></span> Maurizio Falconi - falker47
-      </a>
-    </p>
-  </footer>
-
-  <script>
-    // Imposta l'anno corrente nel footer
-    document.getElementById("currentYear").textContent = new Date().getFullYear();
-  </script>
-  
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
-  <!-- Firebase App (la core library di Firebase) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <!-- Firebase Firestore -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <!-- Firebase Auth -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-
-  <script src="script.js"></script>
-</body>
-
+      </div>
+    </div>
+  </body>
 </html>
