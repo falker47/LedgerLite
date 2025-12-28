@@ -448,18 +448,90 @@ body {
 }
 
 /* Responsive */
+/* Responsive */
 @media (max-width: 640px) {
-  .controls-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
+    .controls-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-filter {
+        flex-direction: column;
+    }
 
-  .search-filter {
-    flex-direction: column;
-  }
+    /* Navbar improvements */
+    .navbar {
+        padding: 1rem;
+    }
 
-  .entries-table {
-    display: block;
-    overflow-x: auto;
-  }
+    .nav-brand {
+        font-size: 1.1rem;
+    }
+
+    /* Card View for Table */
+    .entries-table thead {
+        display: none;
+    }
+
+    .entries-table tbody, .entries-table tr, .entries-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .entries-table tr {
+        background: var(--bg-main);
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        box-shadow: var(--shadow-sm);
+        padding: 1rem;
+    }
+
+    .entries-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border-color);
+        text-align: right;
+    }
+
+    .entries-table td:last-child {
+        border-bottom: none;
+        justify-content: flex-end;
+        padding-top: 1rem;
+        gap: 0.5rem;
+    }
+
+    /* Add labels via CSS */
+    .entries-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        margin-right: 1rem;
+        text-align: left;
+    }
+
+    /* Specific adjustments */
+    /* Date */
+    .entries-table td:nth-child(1)::before { content: "Date"; }
+    /* Type */
+    .entries-table td:nth-child(2)::before { content: "Type"; }
+    /* Counterparty */
+    .entries-table td:nth-child(3)::before { content: "Counterparty"; }
+    /* Description */
+    .entries-table td:nth-child(4)::before { content: "Description"; }
+    /* Amount */
+    .entries-table td:nth-child(5)::before { content: "Amount"; }
+    /* Status */
+    .entries-table td:nth-child(6)::before { content: "Status"; }
+    /* Actions - No label needed */
+    .entries-table td:nth-child(7)::before { content: ""; display: none; }
+
+    /* Smaller stats on mobile */
+    .summary-card .amount {
+        font-size: 1.5rem;
+    }
 }
